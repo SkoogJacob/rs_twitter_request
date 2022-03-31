@@ -2,7 +2,7 @@ use http::Method;
 mod authentication_types;
 pub use authentication_types::AuthenticationType;
 
-const TWITTER_URL: &str = "https://api.twitter.com";
+pub const TWITTER_URL: &str = "https://api.twitter.com";
 
 /// This enum represents the twitter API endpoints. The enum
 /// has methods to get the https URI of the API endpoint and the http

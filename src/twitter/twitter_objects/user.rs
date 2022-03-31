@@ -29,7 +29,7 @@ impl UserField {
             UserField::Location => {String::from("location")}
             UserField::Url => {String::from("url")}
             UserField::Description => {String::from("description")}
-            UserField::Entities => {String::from("entities")}
+            UserField::Entities => {String::from("twitter_objects")}
             UserField::PinnedTweetId => {String::from("pinned_tweet_id")}
             UserField::PublicMetrics => {String::from("public_metrics")}
         }
