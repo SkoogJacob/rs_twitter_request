@@ -1,14 +1,3 @@
-pub struct Tweet {
-
-}
-
-impl Tweet {
-    fn default() -> Tweet {
-        Tweet {}
-    }
-}
-
-
 pub enum TweetField {
     Id,
     CreatedAt,

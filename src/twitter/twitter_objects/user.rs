@@ -1,30 +1,3 @@
-pub struct User {
-    pub id: u64,
-    pub verified: bool,
-    pub profile_img_url: String,
-    pub url: String,
-    pub created_at: String,
-    pub description: String,
-    pub name: String,
-    pub username: String,
-    pub public_metrics: PublicMetrics,
-    pub protected: bool
-}
-
-impl PartialEq<Self> for User {
-    fn eq(&self, other: &Self) -> bool {
-        return self.id.eq(&other.id);
-    }
-}
-
-#[derive(PartialEq, Eq)]
-pub struct PublicMetrics {
-    followers_count: u32,
-    following_count: u32,
-    tweet_count: u32,
-    listed_count: u32
-}
-
 pub enum UserField {
     Id,
     CreatedAt,
