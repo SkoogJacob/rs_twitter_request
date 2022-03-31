@@ -1,16 +1,15 @@
 use std::env;
-use tokio::*;
+use dotenv::dotenv;
 use twitter_request::twitter;
 
 
 #[tokio::main]
 async fn main() {
-    println!("Hello, world!");
-    // twitter_analyzer::test();
+    dotenv().expect(".env file not found!");
     let client = reqwest::Client::new();
     let endpoint = twitter::Endpoint::SearchTweetsRecent;
     let req = client.request(endpoint.get_methods().get(0).unwrap().clone(), endpoint.get_url())
-        .bearer_auth(env::var("BEARER_TOKEN").unwrap())
+        .bearer_auth(env::var("BEARER_TOKEN").unwrap().as_str())
         .header("Content-Type", "application/json")
         .query(&[("query", "from:Archival_Blob")]); // Twitter puts all its shit into query=(key:val)&(key:val)
     println!("req_builder: {:?}", req);
