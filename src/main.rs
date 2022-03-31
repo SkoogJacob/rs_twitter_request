@@ -11,7 +11,7 @@ async fn main() {
     let req = client.request(endpoint.get_methods().get(0).unwrap().clone(), endpoint.get_url())
         .bearer_auth(env::var("BEARER_TOKEN").unwrap().as_str())
         .header("Content-Type", "application/json")
-        .query(&[("query", "from:Archival_Blob")]); // Twitter puts all its shit into query=(key:val)&(key:val)
+        .query(&[("query", "(from:Archival_Blob you)(letters)")]); // Twitter puts all its shit into query=(key:val)&(key:val)
     println!("req_builder: {:?}", req);
     let request = req.try_clone().unwrap().build().unwrap();
     let url = request.url().as_str();
