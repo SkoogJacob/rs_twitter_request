@@ -102,8 +102,7 @@ pub enum Endpoint {
     TimelineUserMentions,
     StreamTweets,
     StreamRules,
-    UsersByUsernames
-    // TODO expand to include more endpoints
+    UsersByUsernames, // TODO expand to include more endpoints
 }
 
 impl Endpoint {
@@ -154,9 +153,7 @@ impl Endpoint {
             Endpoint::StreamRules => {
                 path.insert_str(path.len(), "/2/tweets/search/stream/rules");
             }
-            Endpoint::UsersByUsernames => {
-                path.insert_str(path.len(), "/2/users/by")
-            }
+            Endpoint::UsersByUsernames => path.insert_str(path.len(), "/2/users/by"),
         }
         path
     }
@@ -167,19 +164,24 @@ impl Endpoint {
     /// `Vec<http::Method>` a vector containing the supported HTTP methods.
     pub fn get_methods(&self) -> Vec<Method> {
         match self {
-            Endpoint::LookupTweets |
-            Endpoint::StreamRules => { vec![Method::GET, Method::POST] }
-            Endpoint::LookupTweet => { vec![Method::GET, Method::DELETE] }
-            Endpoint::LookupTweetQuoteTweets |
-            Endpoint::LookupTweetRetweetedBy |
-            Endpoint::LookupTweetsCountRecent |
-            Endpoint::LookupTweetsCountAll |
-            Endpoint::SearchTweetsRecent |
-            Endpoint::SearchTweetsAll |
-            Endpoint::TimelineUserTweets |
-            Endpoint::TimelineUserMentions |
-            Endpoint::UsersByUsernames |
-            Endpoint::StreamTweets => { vec![Method::GET] }
+            Endpoint::LookupTweets | Endpoint::StreamRules => {
+                vec![Method::GET, Method::POST]
+            }
+            Endpoint::LookupTweet => {
+                vec![Method::GET, Method::DELETE]
+            }
+            Endpoint::LookupTweetQuoteTweets
+            | Endpoint::LookupTweetRetweetedBy
+            | Endpoint::LookupTweetsCountRecent
+            | Endpoint::LookupTweetsCountAll
+            | Endpoint::SearchTweetsRecent
+            | Endpoint::SearchTweetsAll
+            | Endpoint::TimelineUserTweets
+            | Endpoint::TimelineUserMentions
+            | Endpoint::UsersByUsernames
+            | Endpoint::StreamTweets => {
+                vec![Method::GET]
+            }
         }
     }
 
@@ -197,48 +199,46 @@ impl Endpoint {
         if !self.get_methods().contains(&method) {
             // This if-check makes exhaustive checks of method unnecessary
             // and it prevents things like LookupTweets with the DELETE method to get through
-            return None
+            return None;
         }
         return match self {
-            Endpoint::LookupTweets |
-            Endpoint::LookupTweet => match method {
-                Method::GET => { Some(AuthenticationType::BearerToken) }
-                Method::DELETE |
-                Method::POST => { Some(AuthenticationType::OauthSignature) }
-                _ => { None }
+            Endpoint::LookupTweets | Endpoint::LookupTweet => match method {
+                Method::GET => Some(AuthenticationType::BearerToken),
+                Method::DELETE | Method::POST => Some(AuthenticationType::OauthSignature),
+                _ => None,
             },
-            Endpoint::LookupTweetQuoteTweets |
-            Endpoint::LookupTweetRetweetedBy |
-            Endpoint::LookupTweetsCountRecent |
-            Endpoint::LookupTweetsCountAll |
-            Endpoint::SearchTweetsRecent |
-            Endpoint::SearchTweetsAll |
-            Endpoint::TimelineUserTweets |
-            Endpoint::TimelineUserMentions |
-            Endpoint::UsersByUsernames |
-            Endpoint::StreamTweets |
-            Endpoint::StreamRules => Some(AuthenticationType::BearerToken)
-        }
+            Endpoint::LookupTweetQuoteTweets
+            | Endpoint::LookupTweetRetweetedBy
+            | Endpoint::LookupTweetsCountRecent
+            | Endpoint::LookupTweetsCountAll
+            | Endpoint::SearchTweetsRecent
+            | Endpoint::SearchTweetsAll
+            | Endpoint::TimelineUserTweets
+            | Endpoint::TimelineUserMentions
+            | Endpoint::UsersByUsernames
+            | Endpoint::StreamTweets
+            | Endpoint::StreamRules => Some(AuthenticationType::BearerToken),
+        };
     }
 
     /// Returns true if the endpoint string needs formatting to replace a {} with a String value.
     pub fn needs_formatting(&self) -> bool {
         return match self {
-            Endpoint::LookupTweets |
-            Endpoint::LookupTweetsCountRecent |
-            Endpoint::LookupTweetsCountAll |
-            Endpoint::SearchTweetsRecent |
-            Endpoint::SearchTweetsAll |
-            Endpoint::StreamTweets |
-            Endpoint::StreamRules |
-            Endpoint::UsersByUsernames => { false }
+            Endpoint::LookupTweets
+            | Endpoint::LookupTweetsCountRecent
+            | Endpoint::LookupTweetsCountAll
+            | Endpoint::SearchTweetsRecent
+            | Endpoint::SearchTweetsAll
+            | Endpoint::StreamTweets
+            | Endpoint::StreamRules
+            | Endpoint::UsersByUsernames => false,
 
-            Endpoint::LookupTweet |
-            Endpoint::LookupTweetQuoteTweets |
-            Endpoint::LookupTweetRetweetedBy |
-            Endpoint::TimelineUserTweets |
-            Endpoint::TimelineUserMentions => { true }
-        }
+            Endpoint::LookupTweet
+            | Endpoint::LookupTweetQuoteTweets
+            | Endpoint::LookupTweetRetweetedBy
+            | Endpoint::TimelineUserTweets
+            | Endpoint::TimelineUserMentions => true,
+        };
     }
 }
 
@@ -249,35 +249,39 @@ mod tests {
     #[test]
     fn lookup_tweets_test() {
         let endpoint = Endpoint::LookupTweets;
-        assert_eq!(endpoint.get_url(),
-                   String::from("https://api.twitter.com/2/tweets"));
+        assert_eq!(
+            endpoint.get_url(),
+            String::from("https://api.twitter.com/2/tweets")
+        );
 
         assert_eq!(endpoint.get_methods(), vec![Method::GET, Method::POST]);
         match endpoint.get_auth_type(Method::DELETE) {
             None => {}
-            Some(_) => { panic!("This endpoint doesn't support DELETE and should return None") }
+            Some(_) => {
+                panic!("This endpoint doesn't support DELETE and should return None")
+            }
         }
         match endpoint.get_auth_type(Method::GET) {
-            None => { panic!("Should return a Some(AuthenticationType::BearerToken)"); }
-            Some(auth) => {
-                match auth {
-                    AuthenticationType::BearerToken => {}
-                    AuthenticationType::OauthSignature => {
-                        panic!("Should return Some(BearerToken), not OAuthSignature");
-                    }
-                }
+            None => {
+                panic!("Should return a Some(AuthenticationType::BearerToken)");
             }
+            Some(auth) => match auth {
+                AuthenticationType::BearerToken => {}
+                AuthenticationType::OauthSignature => {
+                    panic!("Should return Some(BearerToken), not OAuthSignature");
+                }
+            },
         }
         match endpoint.get_auth_type(Method::POST) {
-            None => { panic!("Should return a Some(AuthenticationType::OAuthSignature)"); }
-            Some(auth) => {
-                match auth {
-                    AuthenticationType::BearerToken => {
-                        panic!("Should have returned a OAuthSignature, not a BearerToken.")
-                    }
-                    AuthenticationType::OauthSignature => {}
-                }
+            None => {
+                panic!("Should return a Some(AuthenticationType::OAuthSignature)");
             }
+            Some(auth) => match auth {
+                AuthenticationType::BearerToken => {
+                    panic!("Should have returned a OAuthSignature, not a BearerToken.")
+                }
+                AuthenticationType::OauthSignature => {}
+            },
         }
         assert_eq!(endpoint.needs_formatting(), false);
     }
@@ -290,9 +294,7 @@ mod tests {
 
         vec![Method::GET, Method::DELETE]
             .iter()
-            .for_each(
-                |method| assert_eq!(endpoint.get_methods().contains(method), true)
-            );
+            .for_each(|method| assert_eq!(endpoint.get_methods().contains(method), true));
         assert_eq!(endpoint.get_methods().contains(&Method::PATCH), false);
     }
 }

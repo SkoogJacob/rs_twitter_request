@@ -1,3 +1,1 @@
-pub struct Filter{
-
-}
+pub struct Filter {}

@@ -1,4 +1,4 @@
-pub enum AuthenticationType{
+pub enum AuthenticationType {
     BearerToken,
-    OauthSignature
+    OauthSignature,
 }

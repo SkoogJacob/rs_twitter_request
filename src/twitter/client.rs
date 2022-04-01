@@ -1,40 +1,129 @@
-use std::collections::BTreeSet;
 use super::endpoints::Endpoint;
 use http::Method;
-/**
-This module will have to contain the requests, and then you can break up the filters and such
-to other files to keep things neat.
- */
-pub struct TwitterClient{
+use std::collections::{BTreeMap, BTreeSet, HashSet};
+use std::fmt::{Display, Formatter, Write};
+use std::ops::Deref;
+
+pub struct TwitterClient<'a> {
     client: reqwest::Client,
-    groups: BTreeSet<Group>
+    request: Option<reqwest::RequestBuilder>,
+    groups: HashSet<Group<'a>>,
 }
 
-struct Group {
+#[derive(PartialEq)]
+struct Group<'a> {
+    filters: Vec<Filter<'a>>,
+    locked: bool,
 }
 
-struct Filter<'a> {
-    f_type: FilterType,
-    key: Option<&'a str>,
-    value: &'a str
-}
-
-impl Filter {
-    fn to_string(&self) -> String {
-        let mut s = String::new();
-        match self.key {
-            None => { s.insert_str(0, self.value); }
-            Some(k) => {
-                s.insert_str(0, k);
-                s.insert_str(s.len(), ":");
-                s.insert_str(s.len(), self.value);
-            }
-        }
-        s
+impl<'a> Group<'a> {
+    /// Lock the group, preventing any alterations to self.filters until unlocked.
+    pub fn lock(&mut self) {
+        self.locked = true;
+    }
+    /// Unlock the group, allowing alterations to self.filters until locked.
+    pub fn unlock(&mut self) {
+        self.locked = false;
     }
 }
 
-enum FilterType{
-    Main,
-    Secondary
+#[derive(PartialEq)]
+enum Filter<'a> {
+    Keyword(&'a str, Exact, Is),
+    From(&'a str, Is),
+    RetweetsOf(&'a str, Is),
+    Context(&'a str, Is),
+    Entity(&'a str, Is),
+    Url(&'a str, Is),
+    To(&'a str, Is),
+    IsRetweet(Is),
+    IsReply(Is),
+    IsQuote(Is),
+    IsVerified(Is),
+    IsNullcast(Is),
+    HasHashtags(Is),
+    HasCashtags(Is),
+    HasLinks(Is),
+    HasMentions(Is),
+    HasMedia(Is),
+    HasImages(Is),
+    HasVideos(Is),
+    HasGeo(Is),
+    LocPlaceCountry(String, Is), // TODO Make an enum of the countries
+    LocPlace(String, Is),
+    LocBoundingBox(BoundingBox, Is),
+    LocPointRadius(String, Is),
+    LangLang(String, Is),
+    ConvConversationId(String, Is),
 }
+
+impl<'a> Display for Filter<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let (mut filter_string, is) = match self {
+            Filter::Keyword(val, exact, is) => {
+                let string = if exact.val() {
+                    // If `exact`, wrap with `"`
+                    format!("{}{}{}", "\"", val, "\"")
+                } else {
+                    val.to_string()
+                };
+                (string, is.val())
+            }
+            Filter::From(val, is) => (format!("{}{}", "from:", val), is.val()),
+            Filter::RetweetsOf(val, is) => (format!("{}{}", "retweets_of:", val), is.val()),
+            Filter::Context(val, is) => (format!("{}{}", "context:", val), is.val()),
+            Filter::Entity(val, is) => (format!("{}{}{}", "entity:\"", val, "\""), is.val()),
+            Filter::Url(val, is) => (format!("{}{}{}", "url:\"", val, "\""), is.val()),
+            Filter::To(val, is) => (format!("{}{}", "to:", val), is.val()),
+            Filter::IsRetweet(is) => (String::from("is:retweet"), is.val()),
+            Filter::IsReply(is) => (String::from("is:reply"), is.val()),
+            Filter::IsQuote(is) => (String::from("is:quote"), is.val()),
+            Filter::IsVerified(is) => (String::from("is:verified"), is.val()),
+            Filter::IsNullcast(is) => (String::from("is:nullcast"), is.val()),
+            Filter::HasHashtags(is) => (String::from("has:hashtags"), is.val()),
+            Filter::HasCashtags(is) => (String::from("has:cashtags"), is.val()),
+            Filter::HasLinks(is) => (String::from("has:links"), is.val()),
+            Filter::HasMentions(is) => (String::from("has:mentions"), is.val()),
+            Filter::HasMedia(is) => (String::from("has:media"), is.val()),
+            Filter::HasImages(is) => (String::from("has:images"), is.val()),
+            Filter::HasVideos(is) => (String::from("has:videos"), is.val()),
+            Filter::HasGeo(is) => (String::from("has:geo"), is.val()),
+            Filter::LocPlaceCountry(_, _) => {todo!()}
+            Filter::LocPlace(_, _) => {todo!()}
+            Filter::LocBoundingBox(_, _) => {todo!()}
+            Filter::LocPointRadius(_, _) => {todo!()}
+            Filter::LangLang(_, _) => {todo!()}
+            Filter::ConvConversationId(_, _) => {todo!()}
+        };
+        if !is {
+            filter_string = format!("{}{}", "-", filter_string);
+        }
+        write!(f, "{}", filter_string)
+    }
+}
+
+trait Val: Sized {
+    fn val(&self) -> bool;
+}
+#[derive(PartialEq, Eq)]
+pub struct Exact(bool);
+impl Val for Exact {
+    fn val(&self) -> bool {
+        self.0
+    }
+}
+#[derive(PartialEq, Eq)]
+pub struct Is(bool);
+impl Val for Is {
+    fn val(&self) -> bool {
+        self.0
+    }
+}
+#[derive(PartialEq, Debug)]
+pub struct BoundingBox(pub f32, pub f32, pub f32, pub f32);
+impl Display for BoundingBox {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{:.6} {:.6} {:.6} {:.6}]", self.0, self.1, self.2, self.3)
+    }
+}
+

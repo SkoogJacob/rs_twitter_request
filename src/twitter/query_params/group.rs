@@ -1,10 +1,8 @@
-use std::collections::HashSet;
 use super::filter::Filter;
+use std::collections::HashSet;
 
 pub struct Group {
-    filters: HashSet<Filter>
+    filters: HashSet<Filter>,
 }
 
-impl Group {
-
-}
+impl Group {}
