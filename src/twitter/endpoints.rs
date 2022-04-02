@@ -17,7 +17,7 @@ pub const TWITTER_URL: &str = "https://api.twitter.com";
 /// - **GET** Can get information on multiple tweets by passing comma-separated tweets in the query.
 /// - **POST** Allows to post a new tweet.
 ///
-/// ## LookupTweet
+/// ## LookupTweet(tweet_id: String)
 /// Returns a path that needs to be formatted to replace a placeholder with a single tweet ID.
 /// Supports both GET and POST.
 ///
@@ -27,7 +27,7 @@ pub const TWITTER_URL: &str = "https://api.twitter.com";
 /// - **GET** fetches the tweet, allowing for more detailed information by passing additional query parameters.
 /// - **DELETE** deletes the tweet.
 ///
-/// ## LookupTweetQuoteTweets
+/// ## LookupTweetQuoteTweets(tweet_id: String)
 /// Returns a path that needs to be formatted to replace a placeholder with a single tweet ID.
 /// Gets the quote tweet of the tweet id in the endpoint path.
 ///
@@ -35,7 +35,7 @@ pub const TWITTER_URL: &str = "https://api.twitter.com";
 /// This method only supports the GET method.
 /// - **GET** gets the quote tweets
 ///
-/// ## LookupTweetRetweetedBy
+/// ## LookupTweetRetweetedBy(tweet_id: String)
 /// Returns a path that needs to be formatted to replace a placeholder with a single tweet ID.
 /// Gets the users who retweeted the specified tweet.
 ///
@@ -63,10 +63,10 @@ pub const TWITTER_URL: &str = "https://api.twitter.com";
 /// ## SearchTweetsAll
 /// ### Methods
 ///
-/// ## TimelineUserTweets
+/// ## TimelineUserTweets(user_id: String)
 /// ### Methods
 ///
-/// ## TimelineUserMentions
+/// ## TimelineUserMentions(user_id: String)
 /// ### Methods
 ///
 /// ## StreamTweets
