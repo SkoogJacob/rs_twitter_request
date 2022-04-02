@@ -92,14 +92,14 @@ pub const TWITTER_URL: &str = "https://api.twitter.com";
 pub enum Endpoint {
     LookupTweets,
     LookupTweet(String),
-    LookupTweetQuoteTweets,
-    LookupTweetRetweetedBy,
+    LookupTweetQuoteTweets(String),
+    LookupTweetRetweetedBy(String),
     LookupTweetsCountRecent,
     LookupTweetsCountAll,
     SearchTweetsRecent,
     SearchTweetsAll,
-    TimelineUserTweets,
-    TimelineUserMentions,
+    TimelineUserTweets(String),
+    TimelineUserMentions(String),
     StreamTweets,
     StreamRules,
     UsersByUsernames, // TODO expand to include more endpoints
@@ -116,16 +116,13 @@ impl Endpoint {
                 path.insert_str(path.len(), "/2/tweets");
             }
             Endpoint::LookupTweet(tweet_id) => {
-                // {} here stands for tweet id
                 path.insert_str(path.len(), format!("/2/tweets/{}", tweet_id).as_str());
             }
-            Endpoint::LookupTweetQuoteTweets => {
-                // {} here stands for tweet id
-                path.insert_str(path.len(), "/2/tweets/{}/quote_tweets");
+            Endpoint::LookupTweetQuoteTweets(tweet_id) => {
+                path.insert_str(path.len(), format!("/2/tweets/{}/quote_tweets", tweet_id).as_str());
             }
-            Endpoint::LookupTweetRetweetedBy => {
-                // {} here stands for tweet id
-                path.insert_str(path.len(), "/2/tweets/{}/retweeted_by");
+            Endpoint::LookupTweetRetweetedBy(tweet_id) => {
+                path.insert_str(path.len(), format!("/2/tweets/{}/retweeted_by", tweet_id).as_str());
             }
             Endpoint::LookupTweetsCountRecent => {
                 path.insert_str(path.len(), "/2/tweets/counts/recent");
@@ -139,13 +136,11 @@ impl Endpoint {
             Endpoint::SearchTweetsAll => {
                 path.insert_str(path.len(), "/2/tweets/search/all");
             }
-            Endpoint::TimelineUserTweets => {
-                // {} here stands for user id
-                path.insert_str(path.len(), "/2/users/{}/tweets");
+            Endpoint::TimelineUserTweets(user_id) => {
+                path.insert_str(path.len(), format!("/2/users/{}/tweets", user_id).as_str());
             }
-            Endpoint::TimelineUserMentions => {
-                // {} here stands for user id
-                path.insert_str(path.len(), "/2/users/{}/mentions");
+            Endpoint::TimelineUserMentions(user_id) => {
+                path.insert_str(path.len(), format!("/2/users/{}/mentions", user_id).as_str());
             }
             Endpoint::StreamTweets => {
                 path.insert_str(path.len(), "/2/tweets/search/stream");
