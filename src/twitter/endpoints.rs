@@ -91,7 +91,7 @@ pub const TWITTER_URL: &str = "https://api.twitter.com";
 ///
 pub enum Endpoint {
     LookupTweets,
-    LookupTweet,
+    LookupTweet(String),
     LookupTweetQuoteTweets,
     LookupTweetRetweetedBy,
     LookupTweetsCountRecent,
@@ -115,9 +115,9 @@ impl Endpoint {
             Endpoint::LookupTweets => {
                 path.insert_str(path.len(), "/2/tweets");
             }
-            Endpoint::LookupTweet => {
+            Endpoint::LookupTweet(tweet_id) => {
                 // {} here stands for tweet id
-                path.insert_str(path.len(), "/2/tweets/{}");
+                path.insert_str(path.len(), format!("/2/tweets/{}", tweet_id).as_str());
             }
             Endpoint::LookupTweetQuoteTweets => {
                 // {} here stands for tweet id

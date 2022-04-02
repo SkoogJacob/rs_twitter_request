@@ -1,6 +1,7 @@
 use dotenv::dotenv;
 use std::env;
 use twitter_request::twitter;
+use reqwest;
 
 #[tokio::main]
 async fn main() {
@@ -13,7 +14,7 @@ async fn main() {
             endpoint.get_url(),
         )
         .bearer_auth(env::var("BEARER_TOKEN").unwrap().as_str())
-        .header("Content-Type", "application/json")
+        .header(reqwest::header::CONTENT_TYPE, "application/json")
         .query(&[("query", "(from:Archival_Blob you)(letters)")]); // Twitter puts all its shit into query=(key:val)&(key:val)
     println!("req_builder: {:?}", req);
     let request = req.try_clone().unwrap().build().unwrap();
