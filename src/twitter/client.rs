@@ -12,7 +12,7 @@ pub struct TwitterClient<'a> {
 
 #[derive(PartialEq)]
 struct Group<'a> {
-    filters: Vec<Filter<'a>>,
+    filters: Vec<Filter<'a>>, // TODO fix groups to work somewhat properly next
     locked: bool,
 }
 
@@ -78,14 +78,14 @@ impl<'a> Display for Filter<'a> {
             Filter::Keyword(val, exact, is) => {
                 let string = if exact.val() {
                     // If `exact`, wrap with `"`
-                    format!("{}{}{}", "\"", val, "\"")
+                    format!("\"{}\"", val)
                 } else {
                     val.to_string()
                 };
                 (string, is.val())
             }
-            Filter::From(val, is) => (format!("{}{}", "from:", val), is.val()),
-            Filter::RetweetsOf(val, is) => (format!("{}{}", "retweets_of:", val), is.val()),
+            Filter::From(val, is) => (format!("from:{}", val), is.val()),
+            Filter::RetweetsOf(val, is) => (format!("retweets_of:{}", val), is.val()),
             Filter::Context(val, is) => (format!("{}{}", "context:", val), is.val()),
             Filter::Entity(val, is) => (format!("{}{}{}", "entity:\"", val, "\""), is.val()),
             Filter::Url(val, is) => (format!("{}{}{}", "url:\"", val, "\""), is.val()),
@@ -152,4 +152,3 @@ impl Display for PointRadius{
         write!(f, "[{:.6} {:.6} {}]", self.longitude, self.latitude, self.radius)
     }
 }
-
