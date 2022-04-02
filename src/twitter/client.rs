@@ -1,7 +1,7 @@
 use super::endpoints::Endpoint;
 use http::Method;
 use std::collections::{BTreeMap, BTreeSet, HashSet};
-use std::fmt::{Display, Formatter, Write};
+use std::fmt::{Display, format, Formatter, Write};
 use std::ops::Deref;
 
 pub struct TwitterClient<'a> {
@@ -52,8 +52,8 @@ enum Filter<'a> {
     LocPlaceCountry(String, Is), // TODO Make an enum of the countries
     LocPlace(String, Is),
     LocBoundingBox(BoundingBox, Is),
-    LocPointRadius(String, Is),
-    LangLang(String, Is),
+    LocPointRadius(PointRadius, Is),
+    LangLang(String, Is), // TODO Make a language enum
     ConvConversationId(String, Is),
 }
 
@@ -88,12 +88,12 @@ impl<'a> Display for Filter<'a> {
             Filter::HasImages(is) => (String::from("has:images"), is.val()),
             Filter::HasVideos(is) => (String::from("has:videos"), is.val()),
             Filter::HasGeo(is) => (String::from("has:geo"), is.val()),
-            Filter::LocPlaceCountry(_, _) => {todo!()}
-            Filter::LocPlace(_, _) => {todo!()}
-            Filter::LocBoundingBox(_, _) => {todo!()}
-            Filter::LocPointRadius(_, _) => {todo!()}
-            Filter::LangLang(_, _) => {todo!()}
-            Filter::ConvConversationId(_, _) => {todo!()}
+            Filter::LocPlaceCountry(val, is) => {(format!("place_country:{}", val), is.val())}
+            Filter::LocPlace(val, is) => {(format!("place:\"{}\"", val), is.val())}
+            Filter::LocBoundingBox(bound_box, is) => {(format!("bounding_box:{}", bound_box), is.val())}
+            Filter::LocPointRadius(point_radius, is) => {(format!("point_radius:{}", point_radius), is.val())}
+            Filter::LangLang(lang, is) => {(format!("lang:{}", lang), is.val())}
+            Filter::ConvConversationId(id, is) => {(format!("conversation_id:{}", id), is.val())}
         };
         if !is {
             filter_string = format!("{}{}", "-", filter_string);
@@ -124,6 +124,17 @@ pub struct BoundingBox(pub f32, pub f32, pub f32, pub f32);
 impl Display for BoundingBox {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "[{:.6} {:.6} {:.6} {:.6}]", self.0, self.1, self.2, self.3)
+    }
+}
+#[derive(PartialEq, Debug)]
+pub struct PointRadius {
+    pub longitude: f32,
+    pub latitude: f32,
+    pub radius: u32
+}
+impl Display for PointRadius{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{:.6} {:.6} {}]", self.longitude, self.latitude, self.radius)
     }
 }
 
