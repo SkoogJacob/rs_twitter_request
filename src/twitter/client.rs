@@ -57,6 +57,21 @@ enum Filter<'a> {
     ConvConversationId(String, Is),
 }
 
+impl<'a> Filter<'a> {
+    pub fn is_main(&self) -> bool {
+        return match self {
+            Filter::Keyword(_, _, _) |
+            Filter::From(_, _) |
+            Filter::RetweetsOf(_, _) |
+            Filter::Context(_, _) |
+            Filter::Entity(_, _) |
+            Filter::Url(_, _) |
+            Filter::To(_, _) => {true}
+            _ => {false}
+        }
+    }
+}
+
 impl<'a> Display for Filter<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let (mut filter_string, is) = match self {
