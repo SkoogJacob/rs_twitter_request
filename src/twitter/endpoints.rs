@@ -110,49 +110,47 @@ impl Endpoint {
     /// {} placeholders that need to be replaced by tweet IDs,
     /// user IDs
     pub fn get_url(&self) -> String {
-        let mut path = String::new();
-        match self {
+        return match self {
             Endpoint::LookupTweets => {
-                path = format!("{}/2/tweets", TWITTER_URL);
+                format!("{}/2/tweets", TWITTER_URL)
             }
             Endpoint::LookupTweet(tweet_id) => {
-                path = format!("{}/2/tweets/{}", TWITTER_URL, tweet_id);
+                format!("{}/2/tweets/{}", TWITTER_URL, tweet_id)
             }
             Endpoint::LookupTweetQuoteTweets(tweet_id) => {
-                path = format!("{}/2/tweets/{}/quote_tweets", TWITTER_URL, tweet_id);
+                format!("{}/2/tweets/{}/quote_tweets", TWITTER_URL, tweet_id)
             }
             Endpoint::LookupTweetRetweetedBy(tweet_id) => {
-                path = format!("{}/2/tweets/{}/retweeted_by", TWITTER_URL, tweet_id);
+                format!("{}/2/tweets/{}/retweeted_by", TWITTER_URL, tweet_id)
             }
             Endpoint::LookupTweetsCountRecent => {
-                path = format!("{}/2/tweets/counts/recent", TWITTER_URL);
+                format!("{}/2/tweets/counts/recent", TWITTER_URL)
             }
             Endpoint::LookupTweetsCountAll => {
-                path = format!("{}/2/tweets/counts/all", TWITTER_URL);
+                format!("{}/2/tweets/counts/all", TWITTER_URL)
             }
             Endpoint::SearchTweetsRecent => {
-                path = format!("{}/2/tweets/search/recent", TWITTER_URL);
+                format!("{}/2/tweets/search/recent", TWITTER_URL)
             }
             Endpoint::SearchTweetsAll => {
-                path = format!("{}/2/tweets/search/all", TWITTER_URL);
+                format!("{}/2/tweets/search/all", TWITTER_URL)
             }
             Endpoint::TimelineUserTweets(user_id) => {
-                path = format!("{}/2/users/{}/tweets", TWITTER_URL, user_id);
+                format!("{}/2/users/{}/tweets", TWITTER_URL, user_id)
             }
             Endpoint::TimelineUserMentions(user_id) => {
-                path = format!("{}/2/users/{}/mentions", TWITTER_URL, user_id);
+                format!("{}/2/users/{}/mentions", TWITTER_URL, user_id)
             }
             Endpoint::StreamTweets => {
-                path = format!("{}/2/tweets/search/stream", TWITTER_URL);
+                format!("{}/2/tweets/search/stream", TWITTER_URL)
             }
             Endpoint::StreamRules => {
-                path = format!("{}/2/tweets/search/stream/rules", TWITTER_URL);
+                format!("{}/2/tweets/search/stream/rules", TWITTER_URL)
             }
             Endpoint::UsersByUsernames => {
-                path = format!("{}/2/users/by", TWITTER_URL);
+                format!("{}/2/users/by", TWITTER_URL)
             },
         }
-        path
     }
 
     /// Gets the supported HTTP methods for this twitter API endpoint.
