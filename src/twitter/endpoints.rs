@@ -110,45 +110,47 @@ impl Endpoint {
     /// {} placeholders that need to be replaced by tweet IDs,
     /// user IDs
     pub fn get_url(&self) -> String {
-        let mut path = TWITTER_URL.to_string();
+        let mut path = String::new();
         match self {
             Endpoint::LookupTweets => {
-                path.insert_str(path.len(), "/2/tweets");
+                path = format!("{}/2/tweets", TWITTER_URL);
             }
             Endpoint::LookupTweet(tweet_id) => {
-                path.insert_str(path.len(), format!("/2/tweets/{}", tweet_id).as_str());
+                path = format!("{}/2/tweets/{}", TWITTER_URL, tweet_id);
             }
             Endpoint::LookupTweetQuoteTweets(tweet_id) => {
-                path.insert_str(path.len(), format!("/2/tweets/{}/quote_tweets", tweet_id).as_str());
+                path = format!("{}/2/tweets/{}/quote_tweets", TWITTER_URL, tweet_id);
             }
             Endpoint::LookupTweetRetweetedBy(tweet_id) => {
-                path.insert_str(path.len(), format!("/2/tweets/{}/retweeted_by", tweet_id).as_str());
+                path = format!("{}/2/tweets/{}/retweeted_by", TWITTER_URL, tweet_id);
             }
             Endpoint::LookupTweetsCountRecent => {
-                path.insert_str(path.len(), "/2/tweets/counts/recent");
+                path = format!("{}/2/tweets/counts/recent", TWITTER_URL);
             }
             Endpoint::LookupTweetsCountAll => {
-                path.insert_str(path.len(), "/2/tweets/counts/all");
+                path = format!("{}/2/tweets/counts/all", TWITTER_URL);
             }
             Endpoint::SearchTweetsRecent => {
-                path.insert_str(path.len(), "/2/tweets/search/recent");
+                path = format!("{}/2/tweets/search/recent", TWITTER_URL);
             }
             Endpoint::SearchTweetsAll => {
-                path.insert_str(path.len(), "/2/tweets/search/all");
+                path = format!("{}/2/tweets/search/all", TWITTER_URL);
             }
             Endpoint::TimelineUserTweets(user_id) => {
-                path.insert_str(path.len(), format!("/2/users/{}/tweets", user_id).as_str());
+                path = format!("{}/2/users/{}/tweets", TWITTER_URL, user_id);
             }
             Endpoint::TimelineUserMentions(user_id) => {
-                path.insert_str(path.len(), format!("/2/users/{}/mentions", user_id).as_str());
+                path = format!("{}/2/users/{}/mentions", TWITTER_URL, user_id);
             }
             Endpoint::StreamTweets => {
-                path.insert_str(path.len(), "/2/tweets/search/stream");
+                path = format!("{}/2/tweets/search/stream", TWITTER_URL);
             }
             Endpoint::StreamRules => {
-                path.insert_str(path.len(), "/2/tweets/search/stream/rules");
+                path = format!("{}/2/tweets/search/stream/rules", TWITTER_URL);
             }
-            Endpoint::UsersByUsernames => path.insert_str(path.len(), "/2/users/by"),
+            Endpoint::UsersByUsernames => {
+                path = format!("{}/2/users/by", TWITTER_URL);
+            },
         }
         path
     }
@@ -162,17 +164,17 @@ impl Endpoint {
             Endpoint::LookupTweets | Endpoint::StreamRules => {
                 vec![Method::GET, Method::POST]
             }
-            Endpoint::LookupTweet => {
+            Endpoint::LookupTweet(_) => {
                 vec![Method::GET, Method::DELETE]
             }
-            Endpoint::LookupTweetQuoteTweets
-            | Endpoint::LookupTweetRetweetedBy
+            Endpoint::LookupTweetQuoteTweets(_)
+            | Endpoint::LookupTweetRetweetedBy(_)
             | Endpoint::LookupTweetsCountRecent
             | Endpoint::LookupTweetsCountAll
             | Endpoint::SearchTweetsRecent
             | Endpoint::SearchTweetsAll
-            | Endpoint::TimelineUserTweets
-            | Endpoint::TimelineUserMentions
+            | Endpoint::TimelineUserTweets(_)
+            | Endpoint::TimelineUserMentions(_)
             | Endpoint::UsersByUsernames
             | Endpoint::StreamTweets => {
                 vec![Method::GET]
@@ -197,42 +199,22 @@ impl Endpoint {
             return None;
         }
         return match self {
-            Endpoint::LookupTweets | Endpoint::LookupTweet => match method {
+            Endpoint::LookupTweets | Endpoint::LookupTweet(_) => match method {
                 Method::GET => Some(AuthenticationType::BearerToken),
                 Method::DELETE | Method::POST => Some(AuthenticationType::OauthSignature),
                 _ => None,
             },
-            Endpoint::LookupTweetQuoteTweets
-            | Endpoint::LookupTweetRetweetedBy
+            Endpoint::LookupTweetQuoteTweets(_)
+            | Endpoint::LookupTweetRetweetedBy(_)
             | Endpoint::LookupTweetsCountRecent
             | Endpoint::LookupTweetsCountAll
             | Endpoint::SearchTweetsRecent
             | Endpoint::SearchTweetsAll
-            | Endpoint::TimelineUserTweets
-            | Endpoint::TimelineUserMentions
+            | Endpoint::TimelineUserTweets(_)
+            | Endpoint::TimelineUserMentions(_)
             | Endpoint::UsersByUsernames
             | Endpoint::StreamTweets
             | Endpoint::StreamRules => Some(AuthenticationType::BearerToken),
-        };
-    }
-
-    /// Returns true if the endpoint string needs formatting to replace a {} with a String value.
-    pub fn needs_formatting(&self) -> bool {
-        return match self {
-            Endpoint::LookupTweets
-            | Endpoint::LookupTweetsCountRecent
-            | Endpoint::LookupTweetsCountAll
-            | Endpoint::SearchTweetsRecent
-            | Endpoint::SearchTweetsAll
-            | Endpoint::StreamTweets
-            | Endpoint::StreamRules
-            | Endpoint::UsersByUsernames => false,
-
-            Endpoint::LookupTweet
-            | Endpoint::LookupTweetQuoteTweets
-            | Endpoint::LookupTweetRetweetedBy
-            | Endpoint::TimelineUserTweets
-            | Endpoint::TimelineUserMentions => true,
         };
     }
 }
