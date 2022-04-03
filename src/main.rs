@@ -11,7 +11,7 @@ async fn main() {
     let req = client
         .request(
             endpoint.get_methods().get(0).unwrap().clone(),
-            endpoint.get_url(),
+            endpoint.to_string(),
         )
         .bearer_auth(env::var("BEARER_TOKEN").unwrap().as_str())
         .header(reqwest::header::CONTENT_TYPE, "application/json")
