@@ -121,9 +121,14 @@ impl Display for BoundingBox {
 /// circle center, and a radius expressed in km.
 #[derive(PartialEq, Debug)]
 pub struct PointRadius {
-    pub longitude: f32,
-    pub latitude: f32,
-    pub radius_km: u32
+    longitude: f32,
+    latitude: f32,
+    radius_km: u32
+}
+impl PointRadius {
+    pub fn new(longitude: f32, latitude: f32, radius_km: u32) -> PointRadius {
+        PointRadius{longitude, latitude, radius_km}
+    }
 }
 impl Display for PointRadius{
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
