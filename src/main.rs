@@ -1,7 +1,7 @@
 use dotenv::dotenv;
+use reqwest;
 use std::env;
 use twitter_request::twitter;
-use reqwest;
 
 #[tokio::main]
 async fn main() {

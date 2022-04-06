@@ -1,5 +1,5 @@
-use std::fmt::Formatter;
 use http::Method;
+use std::fmt::Formatter;
 mod authentication_types;
 pub use authentication_types::AuthenticationType;
 
@@ -226,7 +226,7 @@ mod tests {
     fn lookup_tweets_test() {
         let endpoint = Endpoint::LookupTweets;
         assert_eq!(
-            endpoint.get_url(),
+            endpoint.to_string(),
             String::from("https://api.twitter.com/2/tweets")
         );
 
@@ -259,14 +259,12 @@ mod tests {
                 AuthenticationType::OauthSignature => {}
             },
         }
-        assert_eq!(endpoint.needs_formatting(), false);
     }
 
     #[test]
     fn lookup_tweet_test() {
-        let endpoint = Endpoint::LookupTweet;
-        assert_eq!(endpoint.get_url(), "https://api.twitter.com/2/tweets/{}");
-        assert_eq!(endpoint.needs_formatting(), true);
+        let endpoint = Endpoint::LookupTweet(String::from("test"));
+        assert_eq!(endpoint.to_string().as_str(), "https://api.twitter.com/2/tweets/test");
 
         vec![Method::GET, Method::DELETE]
             .iter()

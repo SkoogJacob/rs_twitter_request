@@ -33,15 +33,15 @@ pub enum Filter<'a> {
 impl<'a> Filter<'a> {
     pub fn is_main(&self) -> bool {
         return match self {
-            Filter::Keyword(_, _, _) |
-            Filter::From(_, _) |
-            Filter::RetweetsOf(_, _) |
-            Filter::Context(_, _) |
-            Filter::Entity(_, _) |
-            Filter::Url(_, _) |
-            Filter::To(_, _) => {true}
-            _ => {false}
-        }
+            Filter::Keyword(_, _, _)
+            | Filter::From(_, _)
+            | Filter::RetweetsOf(_, _)
+            | Filter::Context(_, _)
+            | Filter::Entity(_, _)
+            | Filter::Url(_, _)
+            | Filter::To(_, _) => true,
+            _ => false,
+        };
     }
 }
 
@@ -76,12 +76,16 @@ impl<'a> Display for Filter<'a> {
             Filter::HasImages(is) => (String::from("has:images"), is.eval()),
             Filter::HasVideos(is) => (String::from("has:videos"), is.eval()),
             Filter::HasGeo(is) => (String::from("has:geo"), is.eval()),
-            Filter::LocPlaceCountry(val, is) => {(format!("place_country:{}", val), is.eval())}
-            Filter::LocPlace(val, is) => {(format!("place:\"{}\"", val), is.eval())}
-            Filter::LocBoundingBox(bound_box, is) => {(format!("bounding_box:{}", bound_box), is.eval())}
-            Filter::LocPointRadius(point_radius, is) => {(format!("point_radius:{}", point_radius), is.eval())}
-            Filter::LangLang(lang, is) => {(format!("lang:{}", lang), is.eval())}
-            Filter::ConvConversationId(id, is) => {(format!("conversation_id:{}", id), is.eval())}
+            Filter::LocPlaceCountry(val, is) => (format!("place_country:{}", val), is.eval()),
+            Filter::LocPlace(val, is) => (format!("place:\"{}\"", val), is.eval()),
+            Filter::LocBoundingBox(bound_box, is) => {
+                (format!("bounding_box:{}", bound_box), is.eval())
+            }
+            Filter::LocPointRadius(point_radius, is) => {
+                (format!("point_radius:{}", point_radius), is.eval())
+            }
+            Filter::LangLang(lang, is) => (format!("lang:{}", lang), is.eval()),
+            Filter::ConvConversationId(id, is) => (format!("conversation_id:{}", id), is.eval()),
         };
         if !is {
             filter_string = format!("{}{}", "-", filter_string);
@@ -114,7 +118,11 @@ impl Val for Is {
 pub struct BoundingBox(pub f32, pub f32, pub f32, pub f32);
 impl Display for BoundingBox {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "[{:.6} {:.6} {:.6} {:.6}]", self.0, self.1, self.2, self.3)
+        write!(
+            f,
+            "[{:.6} {:.6} {:.6} {:.6}]",
+            self.0, self.1, self.2, self.3
+        )
     }
 }
 /// A struct for a point+radius location search, having a coordinate pair for the
@@ -123,15 +131,23 @@ impl Display for BoundingBox {
 pub struct PointRadius {
     longitude: f32,
     latitude: f32,
-    radius_km: u32
+    radius_km: u32,
 }
 impl PointRadius {
     pub fn new(longitude: f32, latitude: f32, radius_km: u32) -> PointRadius {
-        PointRadius{longitude, latitude, radius_km}
+        PointRadius {
+            longitude,
+            latitude,
+            radius_km,
+        }
     }
 }
-impl Display for PointRadius{
+impl Display for PointRadius {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "[{:.6} {:.6} {}km]", self.longitude, self.latitude, self.radius_km)
+        write!(
+            f,
+            "[{:.6} {:.6} {}km]",
+            self.longitude, self.latitude, self.radius_km
+        )
     }
 }

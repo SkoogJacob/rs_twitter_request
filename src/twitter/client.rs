@@ -1,7 +1,7 @@
 use super::{endpoints::Endpoint, query_params::filter::*};
 use http::Method;
 use std::collections::{BTreeMap, BTreeSet, HashSet};
-use std::fmt::{Display, format, Formatter, Write};
+use std::fmt::{format, Display, Formatter, Write};
 use std::ops::Deref;
 
 pub struct TwitterClient<'a> {
@@ -26,5 +26,3 @@ impl<'a> Group<'a> {
         self.locked = false;
     }
 }
-
-
