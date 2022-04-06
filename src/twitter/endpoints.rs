@@ -264,7 +264,7 @@ mod tests {
     #[test]
     fn lookup_tweet_test() {
         let endpoint = Endpoint::LookupTweet(String::from("test"));
-        assert_eq!(endpoint.to_string().as_str(), "https://api.twitter.com/2/tweets/test");
+        assert_eq!(endpoint.to_string(), String::from("https://api.twitter.com/2/tweets/test"));
 
         vec![Method::GET, Method::DELETE]
             .iter()
