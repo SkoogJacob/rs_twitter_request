@@ -221,16 +221,16 @@ impl std::fmt::Display for Endpoint {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
     fn lookup_tweets_test() {
         let endpoint = Endpoint::LookupTweets;
+        let expected_methods = vec![Method::GET, Method::POST];
         assert_eq!(
             endpoint.to_string(),
             String::from("https://api.twitter.com/2/tweets")
         );
 
-        assert_eq!(endpoint.get_methods(), vec![Method::GET, Method::POST]);
+        check_methods(&endpoint, &expected_methods);
         match endpoint.get_auth_type(Method::DELETE) {
             None => {}
             Some(_) => {
@@ -264,11 +264,88 @@ mod tests {
     #[test]
     fn lookup_tweet_test() {
         let endpoint = Endpoint::LookupTweet(String::from("test"));
+        let expected_methods = vec![Method::GET, Method::DELETE];
         assert_eq!(endpoint.to_string(), String::from("https://api.twitter.com/2/tweets/test"));
 
-        vec![Method::GET, Method::DELETE]
-            .iter()
-            .for_each(|method| assert_eq!(endpoint.get_methods().contains(method), true));
-        assert_eq!(endpoint.get_methods().contains(&Method::PATCH), false);
+        check_methods(&endpoint, &expected_methods);
+    }
+
+    #[test]
+    fn lookup_quote_tweets_test() {
+        let endpoint = Endpoint::LookupTweetQuoteTweets(String::from("test"));
+        let expected_paths = vec![Method::GET];
+        check_methods(&endpoint, &expected_paths);
+
+        assert_eq!(
+            endpoint.get_auth_type(Method::GET).unwrap(), AuthenticationType::BearerToken
+        );
+
+        endpoint.to_string();
+    }
+
+    #[test]
+    fn lookup_retweeted_by_test() {
+        let endpoint = Endpoint::LookupTweetRetweetedBy(String::from("test"));
+    }
+
+    #[test]
+    fn lookup_tweets_count_recent_test() {
+        let endpoint = Endpoint::LookupTweetsCountRecent;
+    }
+
+    #[test]
+    fn lookup_tweets_count_all_test() {
+        let endpoint = Endpoint::LookupTweetsCountAll;
+    }
+
+    #[test]
+    fn search_tweets_recent_test() {
+        let endpoint = Endpoint::SearchTweetsRecent;
+    }
+
+    #[test]
+    fn search_tweets_all_test() {
+        let endpoint = Endpoint::SearchTweetsAll;
+    }
+
+    #[test]
+    fn timeline_user_tweets_test() {
+        let endpoint = Endpoint::TimelineUserTweets(String::from("test_user"));
+    }
+
+    #[test]
+    fn timeline_user_mentions_test() {
+        let endpoint = Endpoint::TimelineUserMentions(String::from("test_user"));
+    }
+
+    #[test]
+    fn stream_tweets_test() {
+        let endpoint = Endpoint::StreamTweets;
+    }
+
+    #[test]
+    fn stream_tweets_rules_test() {
+        let endpoint = Endpoint::StreamRules;
+    }
+
+    #[test]
+    fn users_by_usernames_test() {
+        let endpoint = Endpoint::UsersByUsernames;
+    }
+
+    fn check_methods(endpoint: &Endpoint, expected_methods: &Vec<Method>) {
+        let other_methods = vec![Method::GET, Method::DELETE,
+                                 Method::PUT, Method::HEAD];
+        let other_methods: Vec<&Method> = other_methods.iter()
+            .filter(|element| !expected_methods.contains(element)).collect();
+
+        expected_methods.iter()
+            .for_each(
+                |el| assert!(endpoint.get_methods().contains(el))
+            );
+        other_methods.iter().
+            for_each(
+                |el| assert!(!endpoint.get_methods().contains(el))
+            )
     }
 }
