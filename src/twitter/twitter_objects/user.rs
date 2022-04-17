@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter};
+
 pub enum UserField {
     Id,
     CreatedAt,
@@ -15,23 +17,25 @@ pub enum UserField {
     PublicMetrics,
 }
 
-impl UserField {
-    pub fn to_string(&self) -> String {
-        return match self {
-            UserField::Id => String::from("id"),
-            UserField::CreatedAt => String::from("created_at"),
-            UserField::Name => String::from("name"),
-            UserField::Username => String::from("username"),
-            UserField::Protected => String::from("protected"),
-            UserField::Verified => String::from("verified"),
-            UserField::Withheld => String::from("withheld"),
-            UserField::ProfileImageUrl => String::from("profile_image_url"),
-            UserField::Location => String::from("location"),
-            UserField::Url => String::from("url"),
-            UserField::Description => String::from("description"),
-            UserField::Entities => String::from("twitter_objects"),
-            UserField::PinnedTweetId => String::from("pinned_tweet_id"),
-            UserField::PublicMetrics => String::from("public_metrics"),
+impl Display for UserField {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            UserField::Id => "id",
+            UserField::CreatedAt => "created_at",
+            UserField::Name => "name",
+            UserField::Username => "username",
+            UserField::Protected => "protected",
+            UserField::Verified => "verified",
+            UserField::Withheld => "withheld",
+            UserField::ProfileImageUrl => "profile_image_url",
+            UserField::Location => "location",
+            UserField::Url => "url",
+            UserField::Description => "description",
+            UserField::Entities => "twitter_objects",
+            UserField::PinnedTweetId => "pinned_tweet_id",
+            UserField::PublicMetrics => "public_metrics",
         };
+
+        write!(f, "{}", s)
     }
 }
