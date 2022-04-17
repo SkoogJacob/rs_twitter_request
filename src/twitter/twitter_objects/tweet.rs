@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 
+#[derive(PartialEq, Debug)]
 pub enum TweetField {
     Id,
     CreatedAt,

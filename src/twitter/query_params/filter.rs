@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum Filter<'a> {
     Keyword(&'a str, Exact, Is),
     From(&'a str, Is),
@@ -98,7 +98,7 @@ trait Val: Sized {
     fn eval(&self) -> bool;
 }
 /// Simple named wrapper for a boolean that indicates if select search terms are to be "exact".
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug)]
 pub struct Exact(bool);
 impl Val for Exact {
     fn eval(&self) -> bool {
@@ -106,7 +106,7 @@ impl Val for Exact {
     }
 }
 /// Simple named wrapper for a boolean that says whether a filter is positive (shall match) or negative (shall not match)
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug)]
 pub struct Is(bool);
 impl Val for Is {
     fn eval(&self) -> bool {
