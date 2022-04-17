@@ -59,10 +59,10 @@ impl<'a> Display for Filter<'a> {
             }
             Filter::From(val, is) => (format!("from:{}", val), is.eval()),
             Filter::RetweetsOf(val, is) => (format!("retweets_of:{}", val), is.eval()),
-            Filter::Context(val, is) => (format!("{}{}", "context:", val), is.eval()),
-            Filter::Entity(val, is) => (format!("{}{}{}", "entity:\"", val, "\""), is.eval()),
-            Filter::Url(val, is) => (format!("{}{}{}", "url:\"", val, "\""), is.eval()),
-            Filter::To(val, is) => (format!("{}{}", "to:", val), is.eval()),
+            Filter::Context(val, is) => (format!("context:{}", val), is.eval()),
+            Filter::Entity(val, is) => (format!("entity:\"{}\"", val), is.eval()),
+            Filter::Url(val, is) => (format!("url:\"{}\"", val), is.eval()),
+            Filter::To(val, is) => (format!("to:{}", val), is.eval()),
             Filter::IsRetweet(is) => (String::from("is:retweet"), is.eval()),
             Filter::IsReply(is) => (String::from("is:reply"), is.eval()),
             Filter::IsQuote(is) => (String::from("is:quote"), is.eval()),
@@ -88,7 +88,7 @@ impl<'a> Display for Filter<'a> {
             Filter::ConvConversationId(id, is) => (format!("conversation_id:{}", id), is.eval()),
         };
         if !is {
-            filter_string = format!("{}{}", "-", filter_string);
+            filter_string = format!("-{}", filter_string);
         }
         write!(f, "{}", filter_string)
     }
