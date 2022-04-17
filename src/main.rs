@@ -10,12 +10,12 @@ async fn main() {
     let endpoint = twitter::Endpoint::SearchTweetsRecent;
     let req = client
         .request(
-            endpoint.get_methods().get(0).unwrap().clone(),
+            http::Method::GET,
             endpoint.to_string(),
         )
         .bearer_auth(env::var("BEARER_TOKEN").unwrap().as_str())
         .header(reqwest::header::CONTENT_TYPE, "application/json")
-        .query(&[("query", "(from:Archival_Blob you)(letters)")]); // Twitter puts all its shit into query=(key:val)&(key:val)
+        .query(&[("query", "(from:Archival_Blob you)(letters)")]); // Twitter puts all its shit into query=(key:val)(key:val)
     println!("req_builder: {:?}", req);
     let request = req.try_clone().unwrap().build().unwrap();
     let url = request.url().as_str();
