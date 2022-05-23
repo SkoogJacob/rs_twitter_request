@@ -1,7 +1,10 @@
-use http::Method;
 use std::fmt::Formatter;
-mod authentication_types;
+
+use http::Method;
+
 pub use authentication_types::AuthenticationType;
+
+mod authentication_types;
 
 pub const TWITTER_URL: &str = "https://api.twitter.com";
 
@@ -14,7 +17,7 @@ pub const TWITTER_URL: &str = "https://api.twitter.com";
 /// ## LookupTweets
 /// Allows to search for multiple tweets or posting a tweet.
 ///
-/// ### Methods
+/// ### HTTP Methods
 /// - **GET** Can get information on multiple tweets by passing comma-separated tweets in the query.
 /// - **POST** Allows to post a new tweet.
 ///
@@ -22,17 +25,18 @@ pub const TWITTER_URL: &str = "https://api.twitter.com";
 /// Returns a path that needs to be formatted to replace a placeholder with a single tweet ID.
 /// Supports both GET and POST.
 ///
-/// ### Methods
+/// ### HTTP Methods
 /// This endpoint supports GET and DELETE.
 ///
-/// - **GET** fetches the tweet, allowing for more detailed information by passing additional query parameters.
+/// - **GET** fetches the tweet, allowing for more detailed information by passing additional
+///   query parameters.
 /// - **DELETE** deletes the tweet.
 ///
 /// ## LookupTweetQuoteTweets(tweet_id: String)
 /// Returns a path that needs to be formatted to replace a placeholder with a single tweet ID.
 /// Gets the quote tweet of the tweet id in the endpoint path.
 ///
-/// ### Methods
+/// ### HTTP Methods
 /// This method only supports the GET method.
 /// - **GET** gets the quote tweets
 ///
@@ -40,48 +44,47 @@ pub const TWITTER_URL: &str = "https://api.twitter.com";
 /// Returns a path that needs to be formatted to replace a placeholder with a single tweet ID.
 /// Gets the users who retweeted the specified tweet.
 ///
-/// ### Methods
+/// ### HTTP Methods
 /// This method only supports the GET method.
 ///  - **GET** gets the users that have retweeted this tweet.
 ///
 /// ## LookupTweetsCountRecent
-/// TODO write proper description
-///
-/// ### Methods
-/// This endpoint only supports the GET method.
-///  - **GET** Gets the number of tweets that fulfill the query parameters in the last TODO days.
+/// This method only supports the GET method.
+///  - **GET** Gets tweets from the last 7 days that match the query filters.
 ///
 /// ## LookupTweetsCountAll
-/// TODO make a proper description
+/// This endpoint only supports the GET method.
+///  - **GET** Gets all tweets from all time that match the query filters. Only available if
+///    the token used has "Academic Access".
 ///
-/// ### Methods
+/// ### HTTP Methods
 /// This endpoint only supports the GET method.
 ///  - **GET** Gets all tweets made that match the query conditions.
 ///
 /// ## SearchTweetsRecent
-/// ### Methods
+/// ### HTTP Methods
 ///
 /// ## SearchTweetsAll
-/// ### Methods
+/// ### HTTP Methods
 ///
 /// ## TimelineUserTweets(user_id: String)
-/// ### Methods
+/// ### HTTP Methods
 ///
 /// ## TimelineUserMentions(user_id: String)
-/// ### Methods
+/// ### HTTP Methods
 ///
 /// ## StreamTweets
-/// ### Methods
+/// ### HTTP Methods
 ///
 /// ## StreamRules
-/// ### Methods
+/// ### HTTP Methods
 ///
 /// ## UsersByUsernames
-/// ### Methods
+/// ### HTTP Methods
 ///
 /// # Methods
-/// Endpoints has methods for getting supported HTTP methods for endpoints as well as getting
-/// the required authentication type for an endpoint+method combination.
+/// The Endpoints enum has methods for getting the supported HTTP methods as well as getting
+/// what kind of authentication is required for a specific Endpoint + HTTPMethod combination.
 ///
 /// ## `get_methods() -> Vec<http::Method>`
 /// Gets a vector of the endpoint's supported HTTP methods.
@@ -150,7 +153,7 @@ impl Endpoint {
             // and it prevents things like LookupTweets with the DELETE method to get through
             return None;
         }
-        return match self {
+        match self {
             Endpoint::LookupTweets | Endpoint::LookupTweet(_) => match method {
                 Method::GET => Some(AuthenticationType::BearerToken),
                 Method::DELETE | Method::POST => Some(AuthenticationType::OauthSignature),
@@ -167,52 +170,26 @@ impl Endpoint {
             | Endpoint::UsersByUsernames
             | Endpoint::StreamTweets
             | Endpoint::StreamRules => Some(AuthenticationType::BearerToken),
-        };
+        }
     }
 }
 
 impl std::fmt::Display for Endpoint {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let url = match self {
-            Endpoint::LookupTweets => {
-                format!("{}/2/tweets", TWITTER_URL)
-            }
-            Endpoint::LookupTweet(tweet_id) => {
-                format!("{}/2/tweets/{}", TWITTER_URL, tweet_id)
-            }
-            Endpoint::LookupTweetQuoteTweets(tweet_id) => {
-                format!("{}/2/tweets/{}/quote_tweets", TWITTER_URL, tweet_id)
-            }
-            Endpoint::LookupTweetRetweetedBy(tweet_id) => {
-                format!("{}/2/tweets/{}/retweeted_by", TWITTER_URL, tweet_id)
-            }
-            Endpoint::LookupTweetsCountRecent => {
-                format!("{}/2/tweets/counts/recent", TWITTER_URL)
-            }
-            Endpoint::LookupTweetsCountAll => {
-                format!("{}/2/tweets/counts/all", TWITTER_URL)
-            }
-            Endpoint::SearchTweetsRecent => {
-                format!("{}/2/tweets/search/recent", TWITTER_URL)
-            }
-            Endpoint::SearchTweetsAll => {
-                format!("{}/2/tweets/search/all", TWITTER_URL)
-            }
-            Endpoint::TimelineUserTweets(user_id) => {
-                format!("{}/2/users/{}/tweets", TWITTER_URL, user_id)
-            }
-            Endpoint::TimelineUserMentions(user_id) => {
-                format!("{}/2/users/{}/mentions", TWITTER_URL, user_id)
-            }
-            Endpoint::StreamTweets => {
-                format!("{}/2/tweets/search/stream", TWITTER_URL)
-            }
-            Endpoint::StreamRules => {
-                format!("{}/2/tweets/search/stream/rules", TWITTER_URL)
-            }
-            Endpoint::UsersByUsernames => {
-                format!("{}/2/users/by", TWITTER_URL)
-            }
+            Endpoint::LookupTweets => format!("{}/2/tweets", TWITTER_URL),
+            Endpoint::LookupTweet(tweet_id) => format!("{}/2/tweets/{}", TWITTER_URL, tweet_id),
+            Endpoint::LookupTweetQuoteTweets(tweet_id) => format!("{}/2/tweets/{}/quote_tweets", TWITTER_URL, tweet_id),
+            Endpoint::LookupTweetRetweetedBy(tweet_id) => format!("{}/2/tweets/{}/retweeted_by", TWITTER_URL, tweet_id),
+            Endpoint::LookupTweetsCountRecent => format!("{}/2/tweets/counts/recent", TWITTER_URL),
+            Endpoint::LookupTweetsCountAll => format!("{}/2/tweets/counts/all", TWITTER_URL),
+            Endpoint::SearchTweetsRecent => format!("{}/2/tweets/search/recent", TWITTER_URL),
+            Endpoint::SearchTweetsAll => format!("{}/2/tweets/search/all", TWITTER_URL),
+            Endpoint::TimelineUserTweets(user_id) => format!("{}/2/users/{}/tweets", TWITTER_URL, user_id),
+            Endpoint::TimelineUserMentions(user_id) => format!("{}/2/users/{}/mentions", TWITTER_URL, user_id),
+            Endpoint::StreamTweets => format!("{}/2/tweets/search/stream", TWITTER_URL),
+            Endpoint::StreamRules => format!("{}/2/tweets/search/stream/rules", TWITTER_URL),
+            Endpoint::UsersByUsernames => format!("{}/2/users/by", TWITTER_URL)
         };
         write!(f, "{}", url)
     }
@@ -221,6 +198,7 @@ impl std::fmt::Display for Endpoint {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn lookup_tweets_test() {
         let endpoint = Endpoint::LookupTweets;

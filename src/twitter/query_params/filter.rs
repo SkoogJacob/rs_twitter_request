@@ -2,14 +2,14 @@ use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
 
 #[derive(PartialEq, Eq, Debug, Hash)]
-pub enum Filter<'a> {
-    Keyword(&'a str, Exact, Is),
-    From(&'a str, Is),
-    RetweetsOf(&'a str, Is),
-    Context(&'a str, Is),
-    Entity(&'a str, Is),
-    Url(&'a str, Is),
-    To(&'a str, Is),
+pub enum Filter {
+    Keyword(String, Exact, Is),
+    From(String, Is),
+    RetweetsOf(String, Is),
+    Context(String, Is),
+    Entity(String, Is),
+    Url(String, Is),
+    To(String, Is),
     IsRetweet(Is),
     IsReply(Is),
     IsQuote(Is),
@@ -31,7 +31,7 @@ pub enum Filter<'a> {
     ConvConversationId(String, Is),
 }
 
-impl<'a> Filter<'a> {
+impl Filter {
     pub fn is_main(&self) -> bool {
         return match self {
             Filter::Keyword(_, _, _)
@@ -46,7 +46,7 @@ impl<'a> Filter<'a> {
     }
 }
 
-impl<'a> Display for Filter<'a> {
+impl Display for Filter {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let (filter_string, is) = match self {
             Filter::Keyword(val, exact, is) => {
