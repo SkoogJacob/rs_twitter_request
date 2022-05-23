@@ -120,8 +120,8 @@ pub struct BoundingBox {
 }
 impl BoundingBox {
     pub fn new(x1: f32, y1: f32, x2: f32, y2: f32) -> BoundingBox {
-        let (x1, y1, x2, y2) = (Real::from(x1), Real::from(y1),
-                                                          Real::from(x2), Real::from(y2));
+        let (x1, y1, x2, y2) = (Real::new(x1), Real::new(y1),
+                                                          Real::new(x2), Real::new(y2));
         BoundingBox {
             x1, y1, x2, y2
         }
