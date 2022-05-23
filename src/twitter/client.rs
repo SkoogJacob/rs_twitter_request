@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use super::query_params::group::Group;
+use super::query_filters::group::Group;
 
 pub struct TwitterClient {
     client: reqwest::Client,
