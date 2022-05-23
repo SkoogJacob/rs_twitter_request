@@ -1,6 +1,8 @@
-use std::fmt::{Display, Formatter};
+use std::error::Error;
+use std::fmt::{Debug, Display, Formatter};
+use std::hash::{Hash, Hasher};
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Eq, Debug, Hash)]
 pub enum Filter<'a> {
     Keyword(&'a str, Exact, Is),
     From(&'a str, Is),
@@ -97,46 +99,58 @@ impl<'a> Display for Filter<'a> {
     }
 }
 
-trait Val: Sized {
-    fn eval(&self) -> bool;
-}
 /// This enum is used to indicate if a filter is meant to be exact or not
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Hash)]
 pub enum Exact {
     Is,
     Not
 }
 /// This enum is used to indicate if a filter tests for existence or absence
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Hash)]
 pub enum Is {
     Is,
     Not
 }
 /// A struct for a bounding box location search, having two coordinate pairs
-#[derive(PartialEq, Debug)]
-pub struct BoundingBox(pub f32, pub f32, pub f32, pub f32);
+#[derive(PartialEq, Eq, Hash, Debug)]
+pub struct BoundingBox {
+    x1: Real,
+    y1: Real,
+    x2: Real,
+    y2: Real
+}
+impl BoundingBox {
+    pub fn new(x1: f32, y1: f32, x2: f32, y2: f32) -> BoundingBox {
+        let (x1, y1, x2, y2) = (Real::from(x1), Real::from(y1),
+                                                          Real::from(x2), Real::from(y2));
+        BoundingBox {
+            x1, y1, x2, y2
+        }
+    }
+
+}
 impl Display for BoundingBox {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "[{:.6} {:.6} {:.6} {:.6}]",
-            self.0, self.1, self.2, self.3
+            "[{} {} {} {}]",
+            self.x1, self.y1, self.x2, self.y2
         )
     }
 }
 /// A struct for a point+radius location search, having a coordinate pair for the
 /// circle center, and a radius expressed in km.
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Eq, Hash, Debug)]
 pub struct PointRadius {
-    longitude: f32,
-    latitude: f32,
+    longitude: Real,
+    latitude: Real,
     radius_km: u32,
 }
 impl PointRadius {
     pub fn new(longitude: f32, latitude: f32, radius_km: u32) -> PointRadius {
         PointRadius {
-            longitude,
-            latitude,
+            longitude: Real::from(longitude),
+            latitude: Real::from(latitude),
             radius_km,
         }
     }
@@ -145,8 +159,78 @@ impl Display for PointRadius {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "[{:.6} {:.6} {}km]",
+            "[{} {} {}km]",
             self.longitude, self.latitude, self.radius_km
         )
     }
 }
+
+#[derive(Debug)]
+struct Real {
+    r: f32,
+}
+impl Real {
+    /// Constructs a `Real` which is a struct that wraps a float in a `Result`. It panics on NAN,
+    /// guaranteeing that the float is always comparable.
+    pub fn new(real: f32) -> Real {
+        if real.is_nan() {
+            panic!("Real can only be constructed from non-NAN floats")
+        }
+        Real { r: real }
+    }
+    /// Get an immutable reference to the internal Real struct
+    pub fn r(&self) -> f32 {
+        self.r
+    }
+}
+impl PartialEq for Real {
+    fn eq(&self, other: &Self) -> bool {
+        // This comparison will always work as r is guaranteed to never be NAN
+        self.r == other.r
+    }
+}
+/// Can implement Eq for Real as the Ok value is never NAN
+impl Eq for Real {
+}
+impl Hash for Real {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        let stringed = format!("{:.10}", self.r);
+        let stringed = stringed.as_bytes();
+        stringed.iter().for_each(|r| state.write_u8(*r));
+    }
+}
+impl From<f32> for Real {
+    fn from(r: f32) -> Self {
+        Real::new(r)
+    }
+}
+impl From<&str> for Real {
+    fn from(r: &str) -> Self {
+        let r = match r.parse::<f32>() {
+            Ok(num) => {num}
+            Err(_) => {f32::NAN}
+        };
+        Real::from(r)
+    }
+}
+impl Display for Real {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:.6}", self.r)
+    }
+}
+
+/// Error type for when a real is NAN, i.e. NOT real
+#[derive(PartialEq, Eq, Hash)]
+struct NotReal {
+}
+impl Debug for NotReal {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "NotReal {{ \"error: the number was NAN, not real\" }}")
+    }
+}
+impl Display for NotReal {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "error: the number was NAN, not real")
+    }
+}
+impl Error for NotReal {}
