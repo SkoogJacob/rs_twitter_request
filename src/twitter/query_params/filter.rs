@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::hash::{Hash, Hasher};
 
@@ -149,8 +148,8 @@ pub struct PointRadius {
 impl PointRadius {
     pub fn new(longitude: f32, latitude: f32, radius_km: u32) -> PointRadius {
         PointRadius {
-            longitude: Real::from(longitude),
-            latitude: Real::from(latitude),
+            longitude: Real::new(longitude),
+            latitude: Real::new(latitude),
             radius_km,
         }
     }
@@ -194,22 +193,9 @@ impl Eq for Real {
 }
 impl Hash for Real {
     fn hash<H: Hasher>(&self, state: &mut H) {
+        // Using native endian-ness as this is never intended to be sent over network.
         let f_bytes = self.r.to_le_bytes();
         f_bytes.iter().for_each(|r| state.write_u8(*r));
-    }
-}
-impl From<f32> for Real {
-    fn from(r: f32) -> Self {
-        Real::new(r)
-    }
-}
-impl From<&str> for Real {
-    fn from(r: &str) -> Self {
-        let r = match r.parse::<f32>() {
-            Ok(num) => {num}
-            Err(_) => {f32::NAN}
-        };
-        Real::from(r)
     }
 }
 impl Display for Real {
@@ -217,19 +203,3 @@ impl Display for Real {
         write!(f, "{:.6}", self.r)
     }
 }
-
-/// Error type for when a real is NAN, i.e. NOT real
-#[derive(PartialEq, Eq, Hash)]
-struct NotReal {
-}
-impl Debug for NotReal {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "NotReal {{ \"error: the number was NAN, not real\" }}")
-    }
-}
-impl Display for NotReal {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "error: the number was NAN, not real")
-    }
-}
-impl Error for NotReal {}
