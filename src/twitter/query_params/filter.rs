@@ -194,9 +194,8 @@ impl Eq for Real {
 }
 impl Hash for Real {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        let stringed = format!("{:.10}", self.r);
-        let stringed = stringed.as_bytes();
-        stringed.iter().for_each(|r| state.write_u8(*r));
+        let f_bytes = self.r.to_le_bytes();
+        f_bytes.iter().for_each(|r| state.write_u8(*r));
     }
 }
 impl From<f32> for Real {
