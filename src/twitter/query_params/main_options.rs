@@ -11,7 +11,7 @@ pub enum MainOptions {
     EndTime(DateTime<Utc>),
     SinceId(u64),
     UntilId(u64),
-    MaxResults(u8),
+    MaxResults(Max),
     SortOrder(Order),
     NextToken, // WIP
     PaginationToken // WIP
@@ -45,5 +45,21 @@ impl Display for Order {
             Order::Recency => { write!(f, "recency") }
             Order::Relevancy => { write!(f, "relevancy") }
         }
+    }
+}
+
+#[derive(PartialEq, Eq, Debug)]
+pub struct Max {
+    max: u8
+}
+impl Max {
+    pub fn new(max: u8) -> Max {
+        assert!((10..=100).contains(&max), "Max must be between 10 and 100 (inclusive both ends)");
+        Max { max }
+    }
+}
+impl Display for Max {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.max)
     }
 }
