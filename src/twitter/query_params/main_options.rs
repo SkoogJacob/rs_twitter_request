@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter, write};
 
-use chrono::{DateTime, TimeZone, Utc};
+use chrono::{DateTime, Utc};
 
 use crate::twitter::query_filters::group::GroupList;
 

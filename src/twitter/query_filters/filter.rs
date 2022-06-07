@@ -33,16 +33,13 @@ pub enum Filter {
 
 impl Filter {
     pub fn is_main(&self) -> bool {
-        return match self {
-            Filter::Keyword(_, _, _)
+        matches!(self, Filter::Keyword(_, _, _)
             | Filter::From(_, _)
             | Filter::RetweetsOf(_, _)
             | Filter::Context(_, _)
             | Filter::Entity(_, _)
             | Filter::Url(_, _)
-            | Filter::To(_, _) => true,
-            _ => false,
-        };
+            | Filter::To(_, _))
     }
 }
 
