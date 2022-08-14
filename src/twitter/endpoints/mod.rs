@@ -1,10 +1,10 @@
+mod authentication_types;
+
 use std::fmt::Formatter;
 
 use http::Method;
 
 pub use authentication_types::AuthenticationType;
-
-mod authentication_types;
 
 pub const TWITTER_URL: &str = "https://api.twitter.com";
 
