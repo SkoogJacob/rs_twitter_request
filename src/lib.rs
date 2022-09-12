@@ -6,5 +6,5 @@ pub use twitter::{client::TwitterClient, endpoints::Endpoint, query_filters::fil
 
 pub fn hello() {
     let mut client = TwitterClient::new();
-    client.set_endpoint(Endpoint::SearchTweetsRecent, Method::GET);
+    client.set_endpoint(Endpoint::SearchTweetsRecent, Method::GET).expect("whoopsie");
 }

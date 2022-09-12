@@ -1,7 +1,11 @@
 use dotenv::dotenv;
 use reqwest;
 use std::env;
-use twitter_request::twitter;
+use std::process::exit;
+use http::Method;
+use reqwest::Response;
+use twitter_request::{Endpoint, Filter, twitter};
+use twitter_request::errors::TwitterError;
 
 #[tokio::main]
 async fn main() {
@@ -16,16 +20,29 @@ async fn main() {
     println!("req_builder: {:?}", req);
     let request = req.try_clone().unwrap().build().unwrap();
     let url = request.url().as_str();
-    println!("{}", url);
-    println!("{:?}", request);
+    println!("url: {}", url);
+    println!("req: {:?}", request);
     let res = req.send().await;
     match res {
         Ok(r) => {
-            println!("{:?}", r.text().await.unwrap())
+            println!("{:?}", r)
         }
         Err(e) => {
             println!("{:?}", e)
         }
     };
     twitter_request::hello();
+
+    let mut client = twitter::client::TwitterClient::new();
+    match client.set_endpoint(Endpoint::SearchTweetsRecent, Method::GET) {
+        Ok(_) => {}
+        Err(e) => { println!("{:?}", e); exit(1) }
+    };
+    client.add_and_filter(Filter::From("Archival_Blob".to_string(), true.into()));
+    client.add_bearer_token(&env::var("BEARER_TOKEN").unwrap());
+    let req = client.send_request().await;
+    match req {
+        Ok(r) => { println!("{:?}", r) }
+        Err(e) => { println!("{}", e) }
+    }
 }

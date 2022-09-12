@@ -96,7 +96,8 @@ pub const TWITTER_URL: &str = "https://api.twitter.com";
 /// or None if the http method was not supported by the endpoint.
 #[derive(Debug)]
 pub enum Endpoint {
-    /// Used to look up all tweets matching the accompanying query parameters
+    /// Used to look up tweets by passing a comma-separated list of tweet ids
+    /// Currently unsupported, probably need to switch to an endpoint-focused architecture
     LookupTweets,
     /// Used to look up a tweet with a specific ID
     /// The ID is given as the String arg going with this variant
