@@ -62,13 +62,9 @@ impl GroupList {
             self.groups.last_mut().unwrap().and_or = AndOr::Or;
         }
     }
-    /// Removes the last Group in the GroupList and returns the Group
-    pub fn remove_group(&mut self) -> Option<Group> { // TODO: Should the user ever be exposed to
-                                                      // the group object?
-        match self.groups.pop() {
-            Some(g) => Some(g.item),
-            None => None,
-        }
+    /// Removes the last Group in the GroupList
+    pub fn remove_group(&mut self) {
+        self.groups.pop();
     }
 
     /// Returns true if the collection has no groups, not even empty ones

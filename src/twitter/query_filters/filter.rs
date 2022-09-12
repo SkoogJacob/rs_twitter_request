@@ -128,15 +128,6 @@ impl From<bool> for Exact {
         }
     }
 }
-impl Into<Exact> for bool {
-    fn into(self) -> Exact {
-        if self {
-            Exact::Is
-        } else {
-            Exact::Not
-        }
-    }
-}
 /// This enum is used to indicate if a filter tests for existence or absence
 #[derive(PartialEq, Eq, Debug, Hash)]
 pub enum Is {
@@ -146,15 +137,6 @@ pub enum Is {
 impl From<bool> for Is {
     fn from(b: bool) -> Self {
         if b {
-            Is::Is
-        } else {
-            Is::Not
-        }
-    }
-}
-impl Into<Is> for bool {
-    fn into(self) -> Is {
-        if self {
             Is::Is
         } else {
             Is::Not
@@ -249,11 +231,5 @@ impl Display for Real {
 impl From<f32> for Real {
     fn from(f: f32) -> Self {
         Real { r: f }
-    }
-}
-
-impl Into<Real> for f32 {
-    fn into(self) -> Real {
-        Real { r: self }
     }
 }
