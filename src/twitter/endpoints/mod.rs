@@ -7,7 +7,7 @@ use reqwest::{Client, Error, Response};
 
 pub use twitter_auth::{AuthenticationType, AuthenticationData};
 
-use crate::{errors::TwitterError, TwitterClient};
+use crate::{errors::TwitterError, TwitterRequest};
 use crate::twitter::query_filters::group::GroupList;
 
 pub const TWITTER_URL: &str = "https://api.twitter.com";
@@ -175,7 +175,8 @@ impl Endpoint {
             Endpoint::LookupTweets | Endpoint::LookupTweet(_) => {
                 match *method {
                     Method::GET => { Ok(AuthenticationType::BearerToken) },
-                    Method::DELETE | Method::POST => { Ok(AuthenticationType::OauthSignature) }
+                    Method::DELETE | Method::POST => { Ok(AuthenticationType::OauthSignature) },
+                    _ => unreachable!()
                 }
             }
             Endpoint::LookupTweetQuoteTweets(_)
@@ -192,7 +193,7 @@ impl Endpoint {
         }
     }
 
-    pub async fn send_request(&self, &client: &Client, method: Method, groups: &GroupList, auth: AuthenticationData)
+    pub async fn send_request(&self, client: &Client, method: Method, groups: GroupList, auth: AuthenticationData)
                               -> Result<Response, TwitterError> {
         if auth.get_type() != self.get_auth_type(&method).unwrap() {
             return Err(TwitterError::WrongAuthError(self.clone().to_owned(), auth.get_type(), method))
@@ -254,13 +255,13 @@ mod tests {
         );
 
         check_methods(&endpoint, &expected_methods);
-        match endpoint.get_auth_type(Method::DELETE) {
+        match endpoint.get_auth_type(&Method::DELETE) {
             None => {}
             Some(_) => {
                 panic!("This endpoint doesn't support DELETE and should return None")
             }
         }
-        match endpoint.get_auth_type(Method::GET) {
+        match endpoint.get_auth_type(&Method::GET) {
             None => {
                 panic!("Should return a Some(AuthenticationType::BearerToken)");
             }
@@ -271,7 +272,7 @@ mod tests {
                 }
             },
         }
-        match endpoint.get_auth_type(Method::POST) {
+        match endpoint.get_auth_type(&Method::POST) {
             None => {
                 panic!("Should return a Some(AuthenticationType::OAuthSignature)");
             }
@@ -303,7 +304,7 @@ mod tests {
         check_methods(&endpoint, &expected_paths);
 
         assert_eq!(
-            endpoint.get_auth_type(Method::GET).unwrap(),
+            endpoint.get_auth_type(&Method::GET).unwrap(),
             AuthenticationType::BearerToken
         );
 

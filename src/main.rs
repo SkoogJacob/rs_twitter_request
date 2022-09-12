@@ -4,8 +4,8 @@ use std::env;
 use std::process::exit;
 use http::Method;
 use reqwest::Response;
-use twitter_request::{Endpoint, Filter, twitter};
-use twitter_request::errors::TwitterError;
+use twitter_request::{Endpoint, Filter, twitter, TwitterRequest};
+use twitter_request::errors::{TwitterBuilderError, TwitterError};
 
 #[tokio::main]
 async fn main() {
@@ -31,16 +31,21 @@ async fn main() {
             println!("{:?}", e)
         }
     };
-    twitter_request::hello();
 
-    let mut client = twitter::request::TwitterClient::new();
-    match client.set_endpoint(Endpoint::SearchTweetsRecent, Method::GET) {
-        Ok(_) => {}
-        Err(e) => { println!("{:?}", e); exit(1) }
+    let mut request = twitter::request::TwitterRequest::builder()
+        .set_endpoint(Endpoint::SearchTweetsRecent)
+        .add_and_filter(Filter::From("Archival_Blob".to_string(), true.into()))
+        .add_bearer_token(&env::var("BEARER_TOKEN").unwrap())
+        .set_method(Method::GET)
+        .build();
+    let request = match request {
+        Ok(r) => {r}
+        Err(e) => {
+            eprintln!("{:?}", e);
+            panic!("Error building request")
+        },
     };
-    client.add_and_filter(Filter::From("Archival_Blob".to_string(), true.into()));
-    client.add_bearer_token(&env::var("BEARER_TOKEN").unwrap());
-    let req = client.send_request().await;
+    let req = request.send_request(&client).await;
     match req {
         Ok(r) => { println!("{:?}", r) }
         Err(e) => { println!("{}", e) }

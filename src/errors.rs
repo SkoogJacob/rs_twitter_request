@@ -62,8 +62,6 @@ pub enum TwitterBuilderError {
     NoAuthError,
     #[error("no endpoint provided, cannot build TwitterRequest")]
     NoEndpointError,
-    #[error("no request has been built, cannot instantiate a TwitterRequest")]
-    NoRequestError,
     #[error("no method provided, cannot build a TwitterRequest")]
     NoMethodError
 }

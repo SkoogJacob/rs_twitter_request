@@ -2,9 +2,4 @@ pub mod errors;
 pub mod twitter;
 
 pub use http::Method;
-pub use twitter::{request::TwitterClient, endpoints::Endpoint, query_filters::filter::*};
-
-pub fn hello() {
-    let mut client = TwitterClient::new();
-    client.set_endpoint(Endpoint::SearchTweetsRecent, Method::GET).expect("whoopsie");
-}
+pub use twitter::{request::TwitterRequest, endpoints::Endpoint, query_filters::filter::*};
