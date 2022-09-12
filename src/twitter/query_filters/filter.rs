@@ -202,8 +202,11 @@ impl Display for PointRadius {
     }
 }
 
+/// This struct is a simple wrapper for f32 that prevents NaN.
+/// Note that this struct will simply panic if passed a NaN, you as the library user need to
+/// filter f32's used to not be NaN's and handle those errors.
 #[derive(Debug)]
-struct Real {
+pub struct Real {
     r: f32,
 }
 impl Real {
@@ -245,7 +248,7 @@ impl From<f32> for Real {
     /// Converts from the float to a Real. Panics if passed a NaN as Real can never house a NaN
     fn from(f: f32) -> Self {
         if f.is_nan() {
-            panic!("Cannot create a real from a NaN")
+            panic!("Cannot create a Real from a NaN")
         }
         Real { r: f }
     }
