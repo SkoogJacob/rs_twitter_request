@@ -128,6 +128,14 @@ impl From<bool> for Exact {
         }
     }
 }
+impl From<Exact> for bool {
+    fn from(exact: Exact) -> Self {
+        match exact {
+            Exact::Is => {true}
+            Exact::Not => {false}
+        }
+    }
+}
 /// This enum is used to indicate if a filter tests for existence or absence
 #[derive(PartialEq, Eq, Debug, Hash)]
 pub enum Is {
@@ -136,10 +144,14 @@ pub enum Is {
 }
 impl From<bool> for Is {
     fn from(b: bool) -> Self {
-        if b {
-            Is::Is
-        } else {
-            Is::Not
+        if b { Is::Is } else { Is::Not }
+    }
+}
+impl From<Is> for bool {
+    fn from(is: Is) -> Self {
+        match is {
+            Is::Is => {true}
+            Is::Not => {false}
         }
     }
 }
@@ -154,7 +166,7 @@ pub struct BoundingBox {
 }
 impl BoundingBox {
     pub fn new(x1: f32, y1: f32, x2: f32, y2: f32) -> BoundingBox {
-        let (x1, y1, x2, y2) = (Real::new(x1), Real::new(y1), Real::new(x2), Real::new(y2));
+        let (x1, y1, x2, y2) = (Real::from(x1), Real::from(y1), Real::from(x2), Real::from(y2));
         BoundingBox { x1, y1, x2, y2 }
     }
 }
@@ -174,8 +186,8 @@ pub struct PointRadius {
 impl PointRadius {
     pub fn new(longitude: f32, latitude: f32, radius_km: u32) -> PointRadius {
         PointRadius {
-            longitude: Real::new(longitude),
-            latitude: Real::new(latitude),
+            longitude: Real::from(longitude),
+            latitude: Real::from(latitude),
             radius_km,
         }
     }
@@ -197,13 +209,14 @@ struct Real {
 impl Real {
     /// Constructs a `Real` which is a struct that wraps a float in a `Result`. It panics on NAN,
     /// guaranteeing that the float is always comparable.
-    pub fn new(real: f32) -> Real {
+    pub fn new(real: f32) -> Option<Real> {
         if real.is_nan() {
-            panic!("Real can only be constructed from non-NAN floats")
+            None
+        } else {
+            Some(Real { r: real })
         }
-        Real { r: real }
     }
-    /// Get an immutable reference to the internal Real struct
+    /// Get an immutable reference to the internal float
     pub fn r(&self) -> f32 {
         self.r
     }
@@ -229,7 +242,16 @@ impl Display for Real {
     }
 }
 impl From<f32> for Real {
+    /// Converts from the float to a Real. Panics if passed a NaN as Real can never house a NaN
     fn from(f: f32) -> Self {
+        if f.is_nan() {
+            panic!("Cannot create a real from a NaN")
+        }
         Real { r: f }
+    }
+}
+impl From<Real> for f32 {
+    fn from(real: Real) -> Self {
+        real.r
     }
 }
