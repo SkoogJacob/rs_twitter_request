@@ -13,6 +13,7 @@ pub enum TwitterError {
     FromStrError(String),
     NoEndpointSetError,
     NoAuthError,
+    WrongAuthError(Endpoint, AuthenticationType, Method),
     BadAuthError(AuthenticationType),
 }
 
@@ -47,6 +48,22 @@ impl Display for TwitterError {
                     f, "The {} did not grant proper access", t
                 )
             }
+            TwitterError::WrongAuthError(endpoint, auth_type, method) => {
+                write!(f, "{} is not an accepted auth type for {}, use {} instead",
+                auth_type, endpoint, endpoint.get_auth_type(method).unwrap())
+            }
         }
     }
+}
+
+#[derive(Error, Debug)]
+pub enum TwitterBuilderError {
+    #[error("no authentication provided, cannot build TwitterRequest")]
+    NoAuthError,
+    #[error("no endpoint provided, cannot build TwitterRequest")]
+    NoEndpointError,
+    #[error("no request has been built, cannot instantiate a TwitterRequest")]
+    NoRequestError,
+    #[error("no method provided, cannot build a TwitterRequest")]
+    NoMethodError
 }

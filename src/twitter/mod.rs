@@ -1,4 +1,4 @@
-pub mod client;
+pub mod request;
 pub mod endpoints;
 pub mod query_filters;
 pub mod query_params;

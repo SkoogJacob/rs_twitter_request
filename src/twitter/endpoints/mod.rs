@@ -1,12 +1,14 @@
-mod authentication_types;
+mod twitter_auth;
 
 use std::{borrow::Cow, convert, fmt::Formatter, str::FromStr};
 
 use http::Method;
+use reqwest::{Client, Error, Response};
 
-pub use authentication_types::AuthenticationType;
+pub use twitter_auth::{AuthenticationType, AuthenticationData};
 
 use crate::{errors::TwitterError, TwitterClient};
+use crate::twitter::query_filters::group::GroupList;
 
 pub const TWITTER_URL: &str = "https://api.twitter.com";
 
@@ -94,7 +96,7 @@ pub const TWITTER_URL: &str = "https://api.twitter.com";
 /// ## `get_auth_type(method: http::Method) -> Option<String>`
 /// Gets an option containing either a Some(String) with the name of the authentication type,
 /// or None if the http method was not supported by the endpoint.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Endpoint {
     /// Used to look up tweets by passing a comma-separated list of tweet ids
     /// Currently unsupported, probably need to switch to an endpoint-focused architecture
@@ -163,18 +165,19 @@ impl Endpoint {
     /// # Returns
     /// `Some(AuthenticationType)` if the endpoint supports the method
     /// `None` if the endpoint does not support the method
-    pub fn get_auth_type(&self, method: Method) -> Option<AuthenticationType> {
-        if !self.get_methods().contains(&method) {
+    pub fn get_auth_type(&self, method: &Method) -> Result<AuthenticationType, ()> {
+        if !self.get_methods().contains(method) {
             // This if-check makes exhaustive checks of method unnecessary
             // and it prevents things like LookupTweets with the DELETE method to get through
-            return None;
+            return Err(());
         }
         match self {
-            Endpoint::LookupTweets | Endpoint::LookupTweet(_) => match method {
-                Method::GET => Some(AuthenticationType::BearerToken),
-                Method::DELETE | Method::POST => Some(AuthenticationType::OauthSignature),
-                _ => None,
-            },
+            Endpoint::LookupTweets | Endpoint::LookupTweet(_) => {
+                match *method {
+                    Method::GET => { Ok(AuthenticationType::BearerToken) },
+                    Method::DELETE | Method::POST => { Ok(AuthenticationType::OauthSignature) }
+                }
+            }
             Endpoint::LookupTweetQuoteTweets(_)
             | Endpoint::LookupTweetRetweetedBy(_)
             | Endpoint::LookupTweetsCountRecent
@@ -185,7 +188,25 @@ impl Endpoint {
             | Endpoint::TimelineUserMentions(_)
             | Endpoint::UsersByUsernames
             | Endpoint::StreamTweets
-            | Endpoint::StreamRules => Some(AuthenticationType::BearerToken),
+            | Endpoint::StreamRules => Ok(AuthenticationType::BearerToken),
+        }
+    }
+
+    pub async fn send_request(&self, &client: &Client, method: Method, groups: &GroupList, auth: AuthenticationData)
+                              -> Result<Response, TwitterError> {
+        if auth.get_type() != self.get_auth_type(&method).unwrap() {
+            return Err(TwitterError::WrongAuthError(self.clone().to_owned(), auth.get_type(), method))
+        }
+        let req = client.request(method, &self.to_string());
+        let req = match auth.get_type() {
+            AuthenticationType::BearerToken => { req.bearer_auth(auth.get_auth_token())}
+            AuthenticationType::OauthSignature => { todo!() }
+        }.query(&[("query", &groups.to_string())])
+            .send()
+            .await;
+        match req {
+            Ok(r) => { Ok(r) }
+            Err(e) => { Err(TwitterError::RequestError(e)) }
         }
     }
 }

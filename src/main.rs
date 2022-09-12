@@ -33,7 +33,7 @@ async fn main() {
     };
     twitter_request::hello();
 
-    let mut client = twitter::client::TwitterClient::new();
+    let mut client = twitter::request::TwitterClient::new();
     match client.set_endpoint(Endpoint::SearchTweetsRecent, Method::GET) {
         Ok(_) => {}
         Err(e) => { println!("{:?}", e); exit(1) }
