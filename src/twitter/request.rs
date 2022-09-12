@@ -1,8 +1,8 @@
 use http::Method;
-use reqwest::{Client, ClientBuilder, RequestBuilder};
+use reqwest::Client;
 
 use crate::errors::{TwitterBuilderError, TwitterError};
-use crate::twitter::endpoints::{AuthenticationType, AuthenticationData};
+use crate::twitter::endpoints::AuthenticationData;
 
 use super::{
     query_filters::{filter::Filter, group::GroupList},
@@ -107,13 +107,13 @@ impl TwitterRequestBuilder {
         self.groups.new_group_or(init_filter);
         self
     }
-    
+
     /// Adds a bearer token to the request builder
     pub fn add_bearer_token(mut self, token: &str) -> Self {
         self.authentication = Some(AuthenticationData::new_bearer_auth(token));
         self
     }
-    
+
     /// Sets the method of the request
     pub fn set_method(mut self, method: Method) -> Self {
         self.method = Some(method);

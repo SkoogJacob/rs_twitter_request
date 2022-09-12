@@ -1,9 +1,7 @@
 use dotenv::dotenv;
 use reqwest;
 use std::env;
-use std::process::exit;
 use http::Method;
-use reqwest::Response;
 use twitter_request::{Endpoint, Filter, twitter, TwitterRequest};
 use twitter_request::errors::{TwitterBuilderError, TwitterError};
 
@@ -16,7 +14,7 @@ async fn main() {
         .request(http::Method::GET, endpoint.to_string())
         .bearer_auth(env::var("BEARER_TOKEN").unwrap().as_str())
         .header(reqwest::header::CONTENT_TYPE, "application/json")
-        .query(&[("query", "(from:Archival_Blob you)(letters)")]); // Twitter puts all its shit into query=(key:val)(key:val)
+        .query(&[("query", "(from:Archival_Blob)")]); // Twitter puts all its shit into query=(key:val)(key:val)
     println!("req_builder: {:?}", req);
     let request = req.try_clone().unwrap().build().unwrap();
     let url = request.url().as_str();
@@ -32,7 +30,7 @@ async fn main() {
         }
     };
 
-    let mut request = twitter::request::TwitterRequest::builder()
+    let request = TwitterRequest::builder()
         .set_endpoint(Endpoint::SearchTweetsRecent)
         .add_and_filter(Filter::From("Archival_Blob".to_string(), true.into()))
         .add_bearer_token(&env::var("BEARER_TOKEN").unwrap())

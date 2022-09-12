@@ -1,13 +1,13 @@
 mod twitter_auth;
 
-use std::{borrow::Cow, convert, fmt::Formatter, str::FromStr};
+use std::fmt::Formatter;
 
 use http::Method;
-use reqwest::{Client, Error, Response};
+use reqwest::{Client, Response};
 
 pub use twitter_auth::{AuthenticationType, AuthenticationData};
 
-use crate::{errors::TwitterError, TwitterRequest};
+use crate::{errors::TwitterError};
 use crate::twitter::query_filters::group::GroupList;
 
 pub const TWITTER_URL: &str = "https://api.twitter.com";
