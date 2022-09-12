@@ -201,8 +201,10 @@ impl Endpoint {
         let req = client.request(method, &self.to_string());
         let req = match auth.get_type() {
             AuthenticationType::BearerToken => { req.bearer_auth(auth.get_auth_token())}
-            AuthenticationType::OauthSignature => { todo!() }
-        }.query(&[("query", &groups.to_string())])
+            AuthenticationType::OauthSignature => { todo!() } // Temporary match arm, might not be necessary when OAuth is implemented
+        };
+        // TODO add handling for different Endpoint variants, currently only does those that store filter groups in "query"
+        let req = req.query(&[("query", &groups.to_string())])
             .send()
             .await;
         match req {
