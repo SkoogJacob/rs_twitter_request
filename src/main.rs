@@ -9,10 +9,7 @@ async fn main() {
     let client = reqwest::Client::new();
     let endpoint = twitter::Endpoint::SearchTweetsRecent;
     let req = client
-        .request(
-            http::Method::GET,
-            endpoint.to_string(),
-        )
+        .request(http::Method::GET, endpoint.to_string())
         .bearer_auth(env::var("BEARER_TOKEN").unwrap().as_str())
         .header(reqwest::header::CONTENT_TYPE, "application/json")
         .query(&[("query", "(from:Archival_Blob you)(letters)")]); // Twitter puts all its shit into query=(key:val)(key:val)
@@ -29,5 +26,6 @@ async fn main() {
         Err(e) => {
             println!("{:?}", e)
         }
-    }
+    };
+    twitter_request::hello();
 }

@@ -1,10 +1,12 @@
 mod authentication_types;
 
-use std::fmt::Formatter;
+use std::{borrow::Cow, convert, fmt::Formatter, str::FromStr};
 
 use http::Method;
 
 pub use authentication_types::AuthenticationType;
+
+use crate::{errors::TwitterError, TwitterClient};
 
 pub const TWITTER_URL: &str = "https://api.twitter.com";
 
@@ -92,15 +94,28 @@ pub const TWITTER_URL: &str = "https://api.twitter.com";
 /// ## `get_auth_type(method: http::Method) -> Option<String>`
 /// Gets an option containing either a Some(String) with the name of the authentication type,
 /// or None if the http method was not supported by the endpoint.
-///
+#[derive(Debug)]
 pub enum Endpoint {
+    /// Used to look up all tweets matching the accompanying query parameters
     LookupTweets,
+    /// Used to look up a tweet with a specific ID
+    /// The ID is given as the String arg going with this variant
     LookupTweet(String),
+    /// Used to look up tweets quoting the tweet with the passed ID
+    /// The ID is given as the String arg going with this variant
     LookupTweetQuoteTweets(String),
+    /// Used to look up who have retweeted the tweet with the passed ID
+    /// The ID is given as the String arg going with this variant
     LookupTweetRetweetedBy(String),
+    /// Used to look up how many tweets in the last X days match the accompanying query parameters
     LookupTweetsCountRecent,
+    /// Used to look up how many tweets match the accompanying query parameters in the entire
+    /// history of twitter. Can only be used with Academic access.
     LookupTweetsCountAll,
+    /// Used to look up all tweets matching the accompanying query parameters in the last X days
     SearchTweetsRecent,
+    /// Used to look up all tweets that match the accompanying query parameters in the entire
+    /// history of twitter. Can only be used with Academic access.
     SearchTweetsAll,
     TimelineUserTweets(String),
     TimelineUserMentions(String),
@@ -179,17 +194,25 @@ impl std::fmt::Display for Endpoint {
         let url = match self {
             Endpoint::LookupTweets => format!("{}/2/tweets", TWITTER_URL),
             Endpoint::LookupTweet(tweet_id) => format!("{}/2/tweets/{}", TWITTER_URL, tweet_id),
-            Endpoint::LookupTweetQuoteTweets(tweet_id) => format!("{}/2/tweets/{}/quote_tweets", TWITTER_URL, tweet_id),
-            Endpoint::LookupTweetRetweetedBy(tweet_id) => format!("{}/2/tweets/{}/retweeted_by", TWITTER_URL, tweet_id),
+            Endpoint::LookupTweetQuoteTweets(tweet_id) => {
+                format!("{}/2/tweets/{}/quote_tweets", TWITTER_URL, tweet_id)
+            }
+            Endpoint::LookupTweetRetweetedBy(tweet_id) => {
+                format!("{}/2/tweets/{}/retweeted_by", TWITTER_URL, tweet_id)
+            }
             Endpoint::LookupTweetsCountRecent => format!("{}/2/tweets/counts/recent", TWITTER_URL),
             Endpoint::LookupTweetsCountAll => format!("{}/2/tweets/counts/all", TWITTER_URL),
             Endpoint::SearchTweetsRecent => format!("{}/2/tweets/search/recent", TWITTER_URL),
             Endpoint::SearchTweetsAll => format!("{}/2/tweets/search/all", TWITTER_URL),
-            Endpoint::TimelineUserTweets(user_id) => format!("{}/2/users/{}/tweets", TWITTER_URL, user_id),
-            Endpoint::TimelineUserMentions(user_id) => format!("{}/2/users/{}/mentions", TWITTER_URL, user_id),
+            Endpoint::TimelineUserTweets(user_id) => {
+                format!("{}/2/users/{}/tweets", TWITTER_URL, user_id)
+            }
+            Endpoint::TimelineUserMentions(user_id) => {
+                format!("{}/2/users/{}/mentions", TWITTER_URL, user_id)
+            }
             Endpoint::StreamTweets => format!("{}/2/tweets/search/stream", TWITTER_URL),
             Endpoint::StreamRules => format!("{}/2/tweets/search/stream/rules", TWITTER_URL),
-            Endpoint::UsersByUsernames => format!("{}/2/users/by", TWITTER_URL)
+            Endpoint::UsersByUsernames => format!("{}/2/users/by", TWITTER_URL),
         };
         write!(f, "{}", url)
     }
@@ -243,7 +266,10 @@ mod tests {
     fn lookup_tweet_test() {
         let endpoint = Endpoint::LookupTweet(String::from("test"));
         let expected_methods = vec![Method::GET, Method::DELETE];
-        assert_eq!(endpoint.to_string(), String::from("https://api.twitter.com/2/tweets/test"));
+        assert_eq!(
+            endpoint.to_string(),
+            String::from("https://api.twitter.com/2/tweets/test")
+        );
 
         check_methods(&endpoint, &expected_methods);
     }
@@ -255,7 +281,8 @@ mod tests {
         check_methods(&endpoint, &expected_paths);
 
         assert_eq!(
-            endpoint.get_auth_type(Method::GET).unwrap(), AuthenticationType::BearerToken
+            endpoint.get_auth_type(Method::GET).unwrap(),
+            AuthenticationType::BearerToken
         );
 
         endpoint.to_string();
@@ -312,18 +339,17 @@ mod tests {
     }
 
     fn check_methods(endpoint: &Endpoint, expected_methods: &Vec<Method>) {
-        let other_methods = vec![Method::GET, Method::DELETE,
-                                 Method::PUT, Method::HEAD];
-        let other_methods: Vec<&Method> = other_methods.iter()
-            .filter(|element| !expected_methods.contains(element)).collect();
+        let other_methods = vec![Method::GET, Method::DELETE, Method::PUT, Method::HEAD];
+        let other_methods: Vec<&Method> = other_methods
+            .iter()
+            .filter(|element| !expected_methods.contains(element))
+            .collect();
 
-        expected_methods.iter()
-            .for_each(
-                |el| assert!(endpoint.get_methods().contains(el))
-            );
-        other_methods.iter().
-            for_each(
-                |el| assert!(!endpoint.get_methods().contains(el))
-            )
+        expected_methods
+            .iter()
+            .for_each(|el| assert!(endpoint.get_methods().contains(el)));
+        other_methods
+            .iter()
+            .for_each(|el| assert!(!endpoint.get_methods().contains(el)))
     }
 }

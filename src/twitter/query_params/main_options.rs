@@ -1,4 +1,4 @@
-use std::fmt::{Display, Formatter, write};
+use std::fmt::{write, Display, Formatter};
 
 use chrono::{DateTime, Utc};
 
@@ -13,22 +13,36 @@ pub enum MainOptions {
     UntilId(u64),
     MaxResults(Max),
     SortOrder(Order),
-    NextToken, // WIP
-    PaginationToken // WIP
+    NextToken,       // WIP
+    PaginationToken, // WIP
 }
 
 impl Display for MainOptions {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let opt = match self {
-            MainOptions::Query(groups) => {format!("query={}", groups)}
-            MainOptions::StartTime(d) => {format!("start_time={}", d)}
-            MainOptions::EndTime(d) => {format!("end_time={}", d)}
-            MainOptions::SinceId(id) => {format!("since_id={}", id)}
-            MainOptions::UntilId(id) => {format!("until_id={}", id)}
-            MainOptions::MaxResults(max) => {format!("max_results={}", max)}
-            MainOptions::SortOrder(order) => {format!("sort_order={}", order)}
-            MainOptions::NextToken => {"next_token".to_string()}
-            MainOptions::PaginationToken => {"pagination_token".to_string()}
+            MainOptions::Query(groups) => {
+                format!("query={}", groups)
+            }
+            MainOptions::StartTime(d) => {
+                format!("start_time={}", d)
+            }
+            MainOptions::EndTime(d) => {
+                format!("end_time={}", d)
+            }
+            MainOptions::SinceId(id) => {
+                format!("since_id={}", id)
+            }
+            MainOptions::UntilId(id) => {
+                format!("until_id={}", id)
+            }
+            MainOptions::MaxResults(max) => {
+                format!("max_results={}", max)
+            }
+            MainOptions::SortOrder(order) => {
+                format!("sort_order={}", order)
+            }
+            MainOptions::NextToken => "next_token".to_string(),
+            MainOptions::PaginationToken => "pagination_token".to_string(),
         };
         write!(f, "{}", opt)
     }
@@ -37,24 +51,31 @@ impl Display for MainOptions {
 #[derive(PartialEq, Eq, Debug)]
 pub enum Order {
     Recency,
-    Relevancy
+    Relevancy,
 }
 impl Display for Order {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Order::Recency => { write!(f, "recency") }
-            Order::Relevancy => { write!(f, "relevancy") }
+            Order::Recency => {
+                write!(f, "recency")
+            }
+            Order::Relevancy => {
+                write!(f, "relevancy")
+            }
         }
     }
 }
 
 #[derive(PartialEq, Eq, Debug)]
 pub struct Max {
-    max: u8
+    max: u8,
 }
 impl Max {
     pub fn new(max: u8) -> Max {
-        assert!((10..=100).contains(&max), "Max must be between 10 and 100 (inclusive both ends)");
+        assert!(
+            (10..=100).contains(&max),
+            "Max must be between 10 and 100 (inclusive both ends)"
+        );
         Max { max }
     }
 }

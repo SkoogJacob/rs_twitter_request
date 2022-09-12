@@ -3,11 +3,26 @@ use std::hash::{Hash, Hasher};
 
 #[derive(PartialEq, Eq, Debug, Hash)]
 pub enum Filter {
+    /// This filter looks for the given keyword in the tweets.
+    /// If exact the exact keyword is present the match must be exact
+    /// If Is is true, it looks for a positive match, otherwise for a negative match (i.e. NOT
+    /// keyword)
     Keyword(String, Exact, Is),
+    /// This filter checks that the tweet is from the user given in the filter
+    /// If Is is true, it looks for a positive match, otherwise for a negative match (i.e. NOT
+    /// from)
     From(String, Is),
+    /// This filter checks that the tweet is a retweet of <USER/TWEET_ID??>
+    /// If Is is true, it looks for a positive match, otherwise for a negative match (i.e. NOT
+    /// retweets of)
     RetweetsOf(String, Is),
+    /// Twitter context. I don't know that on earth this is, but its here!
     Context(String, Is),
+    /// Twitter entity. Just like Context, this too is present in this enum
     Entity(String, Is),
+    /// This filter looks for tweets containing the given URL link
+    /// If Is is true, it looks for a positive match, otherwise for a negative match (i.e. NOT
+    /// containing URL)
     Url(String, Is),
     To(String, Is),
     IsRetweet(Is),
@@ -33,13 +48,16 @@ pub enum Filter {
 
 impl Filter {
     pub fn is_main(&self) -> bool {
-        matches!(self, Filter::Keyword(_, _, _)
-            | Filter::From(_, _)
-            | Filter::RetweetsOf(_, _)
-            | Filter::Context(_, _)
-            | Filter::Entity(_, _)
-            | Filter::Url(_, _)
-            | Filter::To(_, _))
+        matches!(
+            self,
+            Filter::Keyword(_, _, _)
+                | Filter::From(_, _)
+                | Filter::RetweetsOf(_, _)
+                | Filter::Context(_, _)
+                | Filter::Entity(_, _)
+                | Filter::Url(_, _)
+                | Filter::To(_, _)
+        )
     }
 }
 
@@ -49,8 +67,10 @@ impl Display for Filter {
             Filter::Keyword(val, exact, is) => {
                 let string = match exact {
                     // If `exact`, wrap with `"`
-                    Exact::Is => {format!("\"{}\"", val)}
-                    Exact::Not => {val.to_string()}
+                    Exact::Is => {
+                        format!("\"{}\"", val)
+                    }
+                    Exact::Not => val.to_string(),
                 };
                 (string, is)
             }
@@ -75,9 +95,7 @@ impl Display for Filter {
             Filter::HasGeo(is) => (String::from("has:geo"), is),
             Filter::LocPlaceCountry(val, is) => (format!("place_country:{}", val), is),
             Filter::LocPlace(val, is) => (format!("place:\"{}\"", val), is),
-            Filter::LocBoundingBox(bound_box, is) => {
-                (format!("bounding_box:{}", bound_box), is)
-            }
+            Filter::LocBoundingBox(bound_box, is) => (format!("bounding_box:{}", bound_box), is),
             Filter::LocPointRadius(point_radius, is) => {
                 (format!("point_radius:{}", point_radius), is)
             }
@@ -99,39 +117,68 @@ impl Display for Filter {
 #[derive(PartialEq, Eq, Debug, Hash)]
 pub enum Exact {
     Is,
-    Not
+    Not,
+}
+impl From<bool> for Exact {
+    fn from(b: bool) -> Self {
+        if b {
+            Exact::Is
+        } else {
+            Exact::Not
+        }
+    }
+}
+impl Into<Exact> for bool {
+    fn into(self) -> Exact {
+        if self {
+            Exact::Is
+        } else {
+            Exact::Not
+        }
+    }
 }
 /// This enum is used to indicate if a filter tests for existence or absence
 #[derive(PartialEq, Eq, Debug, Hash)]
 pub enum Is {
     Is,
-    Not
+    Not,
 }
+impl From<bool> for Is {
+    fn from(b: bool) -> Self {
+        if b {
+            Is::Is
+        } else {
+            Is::Not
+        }
+    }
+}
+impl Into<Is> for bool {
+    fn into(self) -> Is {
+        if self {
+            Is::Is
+        } else {
+            Is::Not
+        }
+    }
+}
+
 /// A struct for a bounding box location search, having two coordinate pairs
 #[derive(PartialEq, Eq, Hash, Debug)]
 pub struct BoundingBox {
     x1: Real,
     y1: Real,
     x2: Real,
-    y2: Real
+    y2: Real,
 }
 impl BoundingBox {
     pub fn new(x1: f32, y1: f32, x2: f32, y2: f32) -> BoundingBox {
-        let (x1, y1, x2, y2) = (Real::new(x1), Real::new(y1),
-                                                          Real::new(x2), Real::new(y2));
-        BoundingBox {
-            x1, y1, x2, y2
-        }
+        let (x1, y1, x2, y2) = (Real::new(x1), Real::new(y1), Real::new(x2), Real::new(y2));
+        BoundingBox { x1, y1, x2, y2 }
     }
-
 }
 impl Display for BoundingBox {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "[{} {} {} {}]",
-            self.x1, self.y1, self.x2, self.y2
-        )
+        write!(f, "[{} {} {} {}]", self.x1, self.y1, self.x2, self.y2)
     }
 }
 /// A struct for a point+radius location search, having a coordinate pair for the
@@ -186,8 +233,7 @@ impl PartialEq for Real {
     }
 }
 /// Can implement Eq for Real as the Ok value is never NAN
-impl Eq for Real {
-}
+impl Eq for Real {}
 impl Hash for Real {
     fn hash<H: Hasher>(&self, state: &mut H) {
         // Using native endian-ness as this is never intended to be sent over network.
@@ -198,5 +244,16 @@ impl Hash for Real {
 impl Display for Real {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:.6}", self.r)
+    }
+}
+impl From<f32> for Real {
+    fn from(f: f32) -> Self {
+        Real { r: f }
+    }
+}
+
+impl Into<Real> for f32 {
+    fn into(self) -> Real {
+        Real { r: self }
     }
 }

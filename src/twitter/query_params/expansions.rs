@@ -1,3 +1,1 @@
-pub enum Expansions {
-
-}
+pub enum Expansions {}

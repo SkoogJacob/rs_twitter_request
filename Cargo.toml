@@ -2,7 +2,6 @@
 name = "twitter_request"
 version = "0.1.0"
 edition = "2021"
-license = "Unlicense"
 license-file = "LICENSE"
 readme = "README.MD"
 
@@ -10,9 +9,9 @@ readme = "README.MD"
 
 [dependencies]
 chrono = { version="0.4", features = ["serde"] }
-reqwest = { version="^0.11.9", features = ["json"] }
-tokio = { version="^1.2.0", features = ["full"] }
-dotenv = "^0.15.0"
-http = "^0.2.6"
+reqwest = { version="^0.11", features = ["json"] }
+dotenv = "^0.15"
+http = "^0.2"
+thiserror = "1"
 
 [dev-dependencies]

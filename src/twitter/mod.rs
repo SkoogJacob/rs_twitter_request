@@ -5,4 +5,3 @@ pub mod query_params;
 pub mod twitter_objects;
 
 pub use endpoints::Endpoint;
-
