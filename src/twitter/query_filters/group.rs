@@ -36,16 +36,31 @@ impl GroupList {
         }
     }
     pub fn new_group_and(&mut self, filter: Filter) {
-        self.groups.push(GroupItem {
-            and_or: AndOr::And,
-            item: Group::new(filter),
-        })
+        match self.groups.last_mut() {
+            None => { self.add_group(AndOr::And, Some(filter))}
+            Some(g) => {
+                if g.item.len() == 0 {
+                    g.and_or = AndOr::And
+                } else {
+                    self.add_group(AndOr::And, Some(filter))
+                }
+            }
+        }
     }
     pub fn new_group_or(&mut self, filter: Filter) {
-        self.groups.push(GroupItem {
-            and_or: AndOr::Or,
-            item: Group::new(filter),
-        })
+        let many_groups = self.groups.len() > 1;
+        match self.groups.last_mut() {
+            None => { self.add_group(AndOr::And, Some(filter)) }
+            Some(g) => {
+                if g.item.len() == 0 {
+                    if many_groups {
+                        g.and_or = AndOr::Or
+                    }
+                } else {
+                    self.add_group(AndOr::Or, Some(filter))
+                }
+            }
+        }
     }
     pub fn new_empty_group_and(&mut self) {
         if self.no_groups() || !self.empty_tail() {
@@ -65,6 +80,21 @@ impl GroupList {
     /// Removes the last Group in the GroupList
     pub fn remove_group(&mut self) {
         self.groups.pop();
+    }
+
+    /// Gets the number of groups in the GroupList
+    pub fn len(&self) -> usize {
+        return self.groups.len()
+    }
+
+    pub fn flatten(mut self) -> GroupList {
+        if self.len() > 1 {
+            let rest = self.groups.split_off(1);
+            for g in rest {
+                self.groups[0].item.extend(g.item)
+            }
+        }
+        self
     }
 
     /// Returns true if the collection has no groups, not even empty ones
@@ -112,11 +142,59 @@ impl Display for GroupList {
     }
 }
 
+impl<'group_life> IntoIterator for &'group_life GroupList {
+    type Item = &'group_life Filter;
+    type IntoIter = GroupListIterator<'group_life>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        GroupListIterator {
+            outer: self.groups.iter(),
+            inner: None
+        }
+    }
+}
+
+pub struct GroupListIterator<'group_life> {
+    outer: std::slice::Iter<'group_life, GroupItem>,
+    inner: Option<std::slice::Iter<'group_life, FilterItem>>
+}
+impl<'group_life> Iterator for GroupListIterator<'group_life> {
+    type Item = &'group_life Filter;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match &mut self.inner {
+            // Check if self.inner has an iterator to iterate over
+            None => {
+                match self.outer.next() {
+                    None => { return None }
+                    Some(i) => {
+                        let group = &i.item;
+                        self.inner = Some(group.into_iter());
+                        self.next()
+                    }
+                }
+            }
+            Some(f) => {
+                match f.next() {
+                    None => {
+                        // if the inner iterator is empty, set inner to None and go to next iteration
+                        self.inner = None;
+                        self.next()
+                    }
+                    Some(f) => {
+                        Some(&f.item)
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// A group is a group of filters in the twitter search query.
 /// Each filter is connected to another by an AND/OR connection.
 #[derive(Eq, PartialEq, Debug, Hash)]
 struct Group {
-    list: Vec<QueryItem<Filter>>,
+    list: Vec<FilterItem>,
 }
 impl Group {
     /// Creates a new `Group` instance
@@ -134,6 +212,10 @@ impl Group {
         Group {
             list: Vec::with_capacity(8),
         }
+    }
+
+    pub fn extend(&mut self, other: Group) {
+        self.list.extend(other.list)
     }
 
     /// Pushes a new filter to the list with an AND connector
@@ -180,6 +262,15 @@ impl Display for Group {
                 .expect("Could not write the filter into the String buffer");
         });
         write!(f, "({})", res_string.trim())
+    }
+}
+
+impl<'group_life> IntoIterator for &'group_life Group {
+    type Item = &'group_life FilterItem;
+    type IntoIter = std::slice::Iter<'group_life, FilterItem>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.list.iter()
     }
 }
 

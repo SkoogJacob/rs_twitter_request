@@ -44,6 +44,7 @@ pub enum Filter {
     LocPointRadius(PointRadius, Is),
     LangLang(String, Is), // TODO Make a language enum
     ConvConversationId(String, Is),
+    TweetId(u64)
 }
 
 impl Filter {
@@ -101,6 +102,7 @@ impl Display for Filter {
             }
             Filter::LangLang(lang, is) => (format!("lang:{}", lang), is),
             Filter::ConvConversationId(id, is) => (format!("conversation_id:{}", id), is),
+            Filter::TweetId(id) => { return write!(f, "{}", id) }
         };
         match is {
             Is::Is => {

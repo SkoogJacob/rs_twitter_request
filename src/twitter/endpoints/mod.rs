@@ -7,7 +7,7 @@ use reqwest::{Client, Response};
 
 pub use twitter_auth::{AuthenticationType, AuthenticationData};
 
-use crate::{errors::TwitterError};
+use crate::{errors::TwitterError, Filter};
 use crate::twitter::query_filters::group::GroupList;
 
 pub const TWITTER_URL: &str = "https://api.twitter.com";
@@ -202,6 +202,25 @@ impl Endpoint {
         let req = match auth.get_type() {
             AuthenticationType::BearerToken => { req.bearer_auth(auth.get_auth_token())}
             AuthenticationType::OauthSignature => { todo!() } // Temporary match arm, might not be necessary when OAuth is implemented
+        };
+        let req = match self {
+            Endpoint::LookupTweets => {
+                // This endpoint looks up tweets using provided IDS
+                req.query(&[("ids", &groups.to_string().replace(" ", ","))])
+            }
+            _ => req
+            // Endpoint::LookupTweet(_) => {}
+            // Endpoint::LookupTweetQuoteTweets(_) => {}
+            // Endpoint::LookupTweetRetweetedBy(_) => {}
+            // Endpoint::LookupTweetsCountRecent => {}
+            // Endpoint::LookupTweetsCountAll => {}
+            // Endpoint::SearchTweetsRecent => {}
+            // Endpoint::SearchTweetsAll => {}
+            // Endpoint::TimelineUserTweets(_) => {}
+            // Endpoint::TimelineUserMentions(_) => {}
+            // Endpoint::StreamTweets => {}
+            // Endpoint::StreamRules => {}
+            // Endpoint::UsersByUsernames => {}
         };
         // TODO add handling for different Endpoint variants, currently only does those that store filter groups in "query"
         let req = req.query(&[("query", &groups.to_string())])
