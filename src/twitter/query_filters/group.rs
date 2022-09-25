@@ -144,21 +144,21 @@ impl Display for GroupList {
 
 impl<'group_life> IntoIterator for &'group_life GroupList {
     type Item = &'group_life Filter;
-    type IntoIter = GroupListIterator<'group_life>;
+    type IntoIter = GroupListFlatten<'group_life>;
 
     fn into_iter(self) -> Self::IntoIter {
-        GroupListIterator {
+        GroupListFlatten {
             outer: self.groups.iter(),
             inner: None
         }
     }
 }
 
-pub struct GroupListIterator<'group_life> {
+pub struct GroupListFlatten<'group_life> {
     outer: std::slice::Iter<'group_life, GroupItem>,
     inner: Option<std::slice::Iter<'group_life, FilterItem>>
 }
-impl<'group_life> Iterator for GroupListIterator<'group_life> {
+impl<'group_life> Iterator for GroupListFlatten<'group_life> {
     type Item = &'group_life Filter;
 
     fn next(&mut self) -> Option<Self::Item> {
