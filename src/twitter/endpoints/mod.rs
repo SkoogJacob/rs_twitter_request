@@ -5,10 +5,10 @@ use std::fmt::Formatter;
 use http::Method;
 use reqwest::{Client, Response};
 
-pub use twitter_auth::{AuthenticationType, AuthenticationData};
+pub use twitter_auth::{AuthenticationData, AuthenticationType};
 
-use crate::{errors::TwitterError, Filter};
 use crate::twitter::query_filters::group::GroupList;
+use crate::{errors::TwitterError, Filter};
 
 pub const TWITTER_URL: &str = "https://api.twitter.com";
 
@@ -172,13 +172,11 @@ impl Endpoint {
             return Err(());
         }
         match self {
-            Endpoint::LookupTweets | Endpoint::LookupTweet(_) => {
-                match *method {
-                    Method::GET => { Ok(AuthenticationType::BearerToken) },
-                    Method::DELETE | Method::POST => { Ok(AuthenticationType::OauthSignature) },
-                    _ => unreachable!()
-                }
-            }
+            Endpoint::LookupTweets | Endpoint::LookupTweet(_) => match *method {
+                Method::GET => Ok(AuthenticationType::BearerToken),
+                Method::DELETE | Method::POST => Ok(AuthenticationType::OauthSignature),
+                _ => unreachable!(),
+            },
             Endpoint::LookupTweetQuoteTweets(_)
             | Endpoint::LookupTweetRetweetedBy(_)
             | Endpoint::LookupTweetsCountRecent
@@ -193,42 +191,50 @@ impl Endpoint {
         }
     }
 
-    pub async fn send_request(&self, client: &Client, method: Method, groups: GroupList, auth: AuthenticationData)
-                              -> Result<Response, TwitterError> {
+    pub async fn send_request(
+        &self,
+        client: &Client,
+        method: Method,
+        groups: GroupList,
+        auth: AuthenticationData,
+    ) -> Result<Response, TwitterError> {
         if auth.get_type() != self.get_auth_type(&method).unwrap() {
-            return Err(TwitterError::WrongAuthError(self.clone().to_owned(), auth.get_type(), method))
+            return Err(TwitterError::WrongAuthError(
+                self.clone().to_owned(),
+                auth.get_type(),
+                method,
+            ));
         }
         let req = client.request(method, &self.to_string());
         let req = match auth.get_type() {
-            AuthenticationType::BearerToken => { req.bearer_auth(auth.get_auth_token())}
-            AuthenticationType::OauthSignature => { todo!() } // Temporary match arm, might not be necessary when OAuth is implemented
+            AuthenticationType::BearerToken => req.bearer_auth(auth.get_auth_token()),
+            AuthenticationType::OauthSignature => {
+                todo!()
+            } // Temporary match arm, might not be necessary when OAuth is implemented
         };
         let req = match self {
             Endpoint::LookupTweets => {
                 // This endpoint looks up tweets using provided IDS
                 req.query(&[("ids", &groups.to_string().replace(" ", ","))])
             }
-            _ => req
-            // Endpoint::LookupTweet(_) => {}
-            // Endpoint::LookupTweetQuoteTweets(_) => {}
-            // Endpoint::LookupTweetRetweetedBy(_) => {}
-            // Endpoint::LookupTweetsCountRecent => {}
-            // Endpoint::LookupTweetsCountAll => {}
-            // Endpoint::SearchTweetsRecent => {}
-            // Endpoint::SearchTweetsAll => {}
-            // Endpoint::TimelineUserTweets(_) => {}
-            // Endpoint::TimelineUserMentions(_) => {}
-            // Endpoint::StreamTweets => {}
-            // Endpoint::StreamRules => {}
-            // Endpoint::UsersByUsernames => {}
+            _ => req, // Endpoint::LookupTweet(_) => {}
+                      // Endpoint::LookupTweetQuoteTweets(_) => {}
+                      // Endpoint::LookupTweetRetweetedBy(_) => {}
+                      // Endpoint::LookupTweetsCountRecent => {}
+                      // Endpoint::LookupTweetsCountAll => {}
+                      // Endpoint::SearchTweetsRecent => {}
+                      // Endpoint::SearchTweetsAll => {}
+                      // Endpoint::TimelineUserTweets(_) => {}
+                      // Endpoint::TimelineUserMentions(_) => {}
+                      // Endpoint::StreamTweets => {}
+                      // Endpoint::StreamRules => {}
+                      // Endpoint::UsersByUsernames => {}
         };
         // TODO add handling for different Endpoint variants, currently only does those that store filter groups in "query"
-        let req = req.query(&[("query", &groups.to_string())])
-            .send()
-            .await;
+        let req = req.query(&[("query", &groups.to_string())]).send().await;
         match req {
-            Ok(r) => { Ok(r) }
-            Err(e) => { Err(TwitterError::RequestError(e)) }
+            Ok(r) => Ok(r),
+            Err(e) => Err(TwitterError::RequestError(e)),
         }
     }
 }

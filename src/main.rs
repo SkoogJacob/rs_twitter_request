@@ -1,9 +1,9 @@
 use dotenv::dotenv;
+use http::Method;
 use reqwest;
 use std::env;
-use http::Method;
-use twitter_request::{Endpoint, Filter, twitter, TwitterRequest};
 use twitter_request::errors::{TwitterBuilderError, TwitterError};
+use twitter_request::{twitter, Endpoint, Filter, TwitterRequest};
 
 #[tokio::main]
 async fn main() {
@@ -37,15 +37,19 @@ async fn main() {
         .set_method(Method::GET)
         .build();
     let request = match request {
-        Ok(r) => {r}
+        Ok(r) => r,
         Err(e) => {
             eprintln!("{:?}", e);
             panic!("Error building request")
-        },
+        }
     };
     let req = request.send_request(&client).await;
     match req {
-        Ok(r) => { println!("{:?}", r) }
-        Err(e) => { println!("{}", e) }
+        Ok(r) => {
+            println!("{:?}", r)
+        }
+        Err(e) => {
+            println!("{}", e)
+        }
     }
 }

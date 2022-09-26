@@ -22,14 +22,15 @@ impl TwitterRequest {
             groups: GroupList::new_empty(),
             endpoint: None,
             method: None,
-            authentication: None
+            authentication: None,
         }
     }
 
-
     /// Sends the request, consuming the `TwitterRequest` object and return the request Result
     pub async fn send_request(self, client: &Client) -> Result<reqwest::Response, TwitterError> {
-        self.endpoint.send_request(client, self.method, self.groups, self.authentication).await
+        self.endpoint
+            .send_request(client, self.method, self.groups, self.authentication)
+            .await
     }
 }
 
@@ -37,7 +38,7 @@ pub struct TwitterRequestBuilder {
     groups: GroupList,
     endpoint: Option<Endpoint>,
     method: Option<Method>,
-    authentication: Option<AuthenticationData>
+    authentication: Option<AuthenticationData>,
 }
 
 impl TwitterRequestBuilder {
@@ -81,8 +82,8 @@ impl TwitterRequestBuilder {
 
     /// Adds a set of filters where all filters should be true
     pub fn add_and_filters<I>(mut self, filters: I) -> Self
-        where
-            I: IntoIterator<Item = Filter>,
+    where
+        I: IntoIterator<Item = Filter>,
     {
         for filter in filters {
             self.groups.push_filter_and(filter)
@@ -92,8 +93,8 @@ impl TwitterRequestBuilder {
 
     /// Adds a set of filters where any one filter should be true
     pub fn add_or_filters<I>(mut self, filters: I) -> Self
-        where
-            I: IntoIterator<Item = Filter>,
+    where
+        I: IntoIterator<Item = Filter>,
     {
         for filter in filters {
             self.groups.push_filter_or(filter)
@@ -132,7 +133,7 @@ impl TwitterRequestBuilder {
                 groups: self.groups,
                 endpoint: self.endpoint.unwrap(),
                 method: self.method.unwrap(),
-                authentication: self.authentication.unwrap()
+                authentication: self.authentication.unwrap(),
             })
         }
     }

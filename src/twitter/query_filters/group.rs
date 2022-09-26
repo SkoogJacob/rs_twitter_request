@@ -37,7 +37,7 @@ impl GroupList {
     }
     pub fn new_group_and(&mut self, filter: Filter) {
         match self.groups.last_mut() {
-            None => { self.add_group(AndOr::And, Some(filter))}
+            None => self.add_group(AndOr::And, Some(filter)),
             Some(g) => {
                 if g.item.len() == 0 {
                     g.and_or = AndOr::And
@@ -50,7 +50,7 @@ impl GroupList {
     pub fn new_group_or(&mut self, filter: Filter) {
         let many_groups = self.groups.len() > 1;
         match self.groups.last_mut() {
-            None => { self.add_group(AndOr::And, Some(filter)) }
+            None => self.add_group(AndOr::And, Some(filter)),
             Some(g) => {
                 if g.item.len() == 0 {
                     if many_groups {
@@ -71,7 +71,11 @@ impl GroupList {
     }
     pub fn new_empty_group_or(&mut self) {
         if self.no_groups() || !self.empty_tail() {
-            let and_or = if self.no_groups() { AndOr::And } else { AndOr::Or };
+            let and_or = if self.no_groups() {
+                AndOr::And
+            } else {
+                AndOr::Or
+            };
             self.add_group(and_or, None)
         } else {
             self.groups.last_mut().unwrap().and_or = AndOr::Or;
@@ -84,7 +88,7 @@ impl GroupList {
 
     /// Gets the number of groups in the GroupList
     pub fn len(&self) -> usize {
-        return self.groups.len()
+        return self.groups.len();
     }
 
     pub fn flatten(mut self) -> GroupList {
@@ -107,7 +111,7 @@ impl GroupList {
         match self.groups.len() {
             0 => true,
             1 => self.groups.last().unwrap().item.len() == 0,
-            _ => false
+            _ => false,
         }
     }
 
@@ -126,7 +130,7 @@ impl GroupList {
         };
         self.groups.push(GroupItem {
             and_or,
-            item: group
+            item: group,
         })
     }
 }
@@ -149,14 +153,14 @@ impl<'group_life> IntoIterator for &'group_life GroupList {
     fn into_iter(self) -> Self::IntoIter {
         GroupListFlatten {
             outer: self.groups.iter(),
-            inner: None
+            inner: None,
         }
     }
 }
 
 pub struct GroupListFlatten<'group_life> {
     outer: std::slice::Iter<'group_life, GroupItem>,
-    inner: Option<std::slice::Iter<'group_life, FilterItem>>
+    inner: Option<std::slice::Iter<'group_life, FilterItem>>,
 }
 impl<'group_life> Iterator for GroupListFlatten<'group_life> {
     type Item = &'group_life Filter;
@@ -164,16 +168,14 @@ impl<'group_life> Iterator for GroupListFlatten<'group_life> {
     fn next(&mut self) -> Option<Self::Item> {
         match &mut self.inner {
             // Check if self.inner has an iterator to iterate over
-            None => {
-                match self.outer.next() {
-                    None => { return None }
-                    Some(i) => {
-                        let group = &i.item;
-                        self.inner = Some(group.into_iter());
-                        self.next()
-                    }
+            None => match self.outer.next() {
+                None => return None,
+                Some(i) => {
+                    let group = &i.item;
+                    self.inner = Some(group.into_iter());
+                    self.next()
                 }
-            }
+            },
             Some(f) => {
                 match f.next() {
                     None => {
@@ -181,9 +183,7 @@ impl<'group_life> Iterator for GroupListFlatten<'group_life> {
                         self.inner = None;
                         self.next()
                     }
-                    Some(f) => {
-                        Some(&f.item)
-                    }
+                    Some(f) => Some(&f.item),
                 }
             }
         }

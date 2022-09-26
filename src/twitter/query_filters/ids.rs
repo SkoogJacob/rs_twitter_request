@@ -26,18 +26,24 @@
  */
 
 pub struct IDFilter {
-    id_list: Vec<u64>
+    id_list: Vec<u64>,
 }
 
 impl IDFilter {
     pub fn new() -> IDFilter {
         IDFilter {
-            id_list: Vec::with_capacity(16)
+            id_list: Vec::with_capacity(16),
         }
     }
-    pub fn from_id_list(ids: impl Iterator<Item=u64> ) -> IDFilter {
+    pub fn from_id_list(ids: impl IntoIterator<Item = u64>) -> IDFilter {
         IDFilter {
-            id_list: Vec::from_iter(ids)
+            id_list: Vec::from_iter(ids),
         }
+    }
+    pub fn add_id(&mut self, id: u64) {
+        self.id_list.push(id)
+    }
+    pub fn add_ids(&mut self, ids: impl IntoIterator<Item = u64>) {
+        self.id_list.extend(ids)
     }
 }

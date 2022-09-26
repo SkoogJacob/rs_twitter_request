@@ -44,7 +44,7 @@ pub enum Filter {
     LocPointRadius(PointRadius, Is),
     LangLang(String, Is), // TODO Make a language enum
     ConvConversationId(String, Is),
-    TweetId(u64)
+    TweetId(u64),
 }
 
 impl Filter {
@@ -102,7 +102,7 @@ impl Display for Filter {
             }
             Filter::LangLang(lang, is) => (format!("lang:{}", lang), is),
             Filter::ConvConversationId(id, is) => (format!("conversation_id:{}", id), is),
-            Filter::TweetId(id) => { return write!(f, "{}", id) }
+            Filter::TweetId(id) => return write!(f, "{}", id),
         };
         match is {
             Is::Is => {
@@ -133,8 +133,8 @@ impl From<bool> for Exact {
 impl From<Exact> for bool {
     fn from(exact: Exact) -> Self {
         match exact {
-            Exact::Is => {true}
-            Exact::Not => {false}
+            Exact::Is => true,
+            Exact::Not => false,
         }
     }
 }
@@ -146,14 +146,18 @@ pub enum Is {
 }
 impl From<bool> for Is {
     fn from(b: bool) -> Self {
-        if b { Is::Is } else { Is::Not }
+        if b {
+            Is::Is
+        } else {
+            Is::Not
+        }
     }
 }
 impl From<Is> for bool {
     fn from(is: Is) -> Self {
         match is {
-            Is::Is => {true}
-            Is::Not => {false}
+            Is::Is => true,
+            Is::Not => false,
         }
     }
 }
@@ -168,7 +172,12 @@ pub struct BoundingBox {
 }
 impl BoundingBox {
     pub fn new(x1: f32, y1: f32, x2: f32, y2: f32) -> BoundingBox {
-        let (x1, y1, x2, y2) = (Real::from(x1), Real::from(y1), Real::from(x2), Real::from(y2));
+        let (x1, y1, x2, y2) = (
+            Real::from(x1),
+            Real::from(y1),
+            Real::from(x2),
+            Real::from(y2),
+        );
         BoundingBox { x1, y1, x2, y2 }
     }
 }

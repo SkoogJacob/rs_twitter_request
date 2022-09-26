@@ -3,8 +3,8 @@ use std::fmt::Display;
 use http::Method;
 use thiserror::Error;
 
-use crate::twitter::Endpoint;
 use crate::twitter::endpoints::AuthenticationType;
+use crate::twitter::Endpoint;
 
 #[derive(Error, Debug)]
 pub enum TwitterError {
@@ -35,22 +35,27 @@ impl Display for TwitterError {
             }
             TwitterError::NoEndpointSetError => {
                 write!(
-                    f, "The TwitterClient has not been provided an endpoint to make a request to"
+                    f,
+                    "The TwitterClient has not been provided an endpoint to make a request to"
                 )
             }
             TwitterError::NoAuthError => {
                 write!(
-                    f, "No authentication information has been given to make this request"
+                    f,
+                    "No authentication information has been given to make this request"
                 )
             }
             TwitterError::BadAuthError(t) => {
-                write!(
-                    f, "The {} did not grant proper access", t
-                )
+                write!(f, "The {} did not grant proper access", t)
             }
             TwitterError::WrongAuthError(endpoint, auth_type, method) => {
-                write!(f, "{} is not an accepted auth type for {}, use {} instead",
-                auth_type, endpoint, endpoint.get_auth_type(method).unwrap())
+                write!(
+                    f,
+                    "{} is not an accepted auth type for {}, use {} instead",
+                    auth_type,
+                    endpoint,
+                    endpoint.get_auth_type(method).unwrap()
+                )
             }
         }
     }
@@ -63,5 +68,5 @@ pub enum TwitterBuilderError {
     #[error("no endpoint provided, cannot build TwitterRequest")]
     NoEndpointError,
     #[error("no method provided, cannot build a TwitterRequest")]
-    NoMethodError
+    NoMethodError,
 }
