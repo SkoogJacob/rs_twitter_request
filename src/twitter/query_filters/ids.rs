@@ -25,25 +25,57 @@
  * For more information, please refer to <http://unlicense.org/>
  */
 
+use std::fmt::Display;
+use std::fmt::Write as _;
+
 pub struct IDFilter {
     id_list: Vec<u64>,
 }
 
 impl IDFilter {
+    /// Creates a new empty IDFilter
     pub fn new() -> IDFilter {
         IDFilter {
             id_list: Vec::with_capacity(16),
         }
     }
+    /// Creates a new IDFilter from an Iterable
     pub fn from_id_list(ids: impl IntoIterator<Item = u64>) -> IDFilter {
         IDFilter {
             id_list: Vec::from_iter(ids),
         }
     }
+    /// Adds an ID to the IDFilter
     pub fn add_id(&mut self, id: u64) {
         self.id_list.push(id)
     }
+    /// Adds all the IDS in the passed iterable into the IDFilter
     pub fn add_ids(&mut self, ids: impl IntoIterator<Item = u64>) {
         self.id_list.extend(ids)
+    }
+    pub fn is_empty(&self) -> bool {
+        self.id_list.is_empty()
+    }
+}
+
+impl Display for IDFilter {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut s = String::from("ids=");
+        self.id_list
+            .iter()
+            .for_each(|id| write!(s, "{},", id).expect("Could not write ID into string buffer"));
+        write!(f, "{}", &s[0..(s.len() - 1)])
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::IDFilter;
+
+    #[test]
+    fn test_empty() {
+        let sut = IDFilter::new();
+        assert!(sut.is_empty());
+        assert_eq!(String::from("ids"), format!("{}", sut))
     }
 }

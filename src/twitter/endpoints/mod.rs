@@ -156,7 +156,7 @@ impl Endpoint {
     }
 
     /// This method returns the auth type the endpoint needs using the passed HTTP method.
-    /// The method returns None if the HTTP method is not supported by the endpoint.
+    /// The method returns an empty Err if the HTTP method is not supported by the endpoint.
     ///
     /// # Parameters
     /// ## `method: http::Method`
@@ -164,7 +164,7 @@ impl Endpoint {
     ///
     /// # Returns
     /// `Some(AuthenticationType)` if the endpoint supports the method
-    /// `None` if the endpoint does not support the method
+    /// `Err(())` if the endpoint does not support the method
     pub fn get_auth_type(&self, method: &Method) -> Result<AuthenticationType, ()> {
         if !self.get_methods().contains(method) {
             // This if-check makes exhaustive checks of method unnecessary
@@ -283,16 +283,16 @@ mod tests {
 
         check_methods(&endpoint, &expected_methods);
         match endpoint.get_auth_type(&Method::DELETE) {
-            None => {}
-            Some(_) => {
-                panic!("This endpoint doesn't support DELETE and should return None")
+            Err(_) => {}
+            Ok(_) => {
+                panic!("This endpoint doesn't support DELETE and should return Err")
             }
         }
         match endpoint.get_auth_type(&Method::GET) {
-            None => {
+            Err(_) => {
                 panic!("Should return a Some(AuthenticationType::BearerToken)");
             }
-            Some(auth) => match auth {
+            Ok(auth) => match auth {
                 AuthenticationType::BearerToken => {}
                 AuthenticationType::OauthSignature => {
                     panic!("Should return Some(BearerToken), not OAuthSignature");
@@ -300,10 +300,10 @@ mod tests {
             },
         }
         match endpoint.get_auth_type(&Method::POST) {
-            None => {
+            Err(_) => {
                 panic!("Should return a Some(AuthenticationType::OAuthSignature)");
             }
-            Some(auth) => match auth {
+            Ok(auth) => match auth {
                 AuthenticationType::BearerToken => {
                     panic!("Should have returned a OAuthSignature, not a BearerToken.")
                 }
