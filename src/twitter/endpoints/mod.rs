@@ -1,6 +1,6 @@
 mod twitter_auth;
 
-use std::fmt::Formatter;
+use std::fmt::{Formatter, Display};
 
 use http::Method;
 use reqwest::{Client, Response};
@@ -103,13 +103,13 @@ pub enum Endpoint {
     LookupTweets,
     /// Used to look up a tweet with a specific ID
     /// The ID is given as the String arg going with this variant
-    LookupTweet(String),
+    LookupTweet(Id),
     /// Used to look up tweets quoting the tweet with the passed ID
     /// The ID is given as the String arg going with this variant
-    LookupTweetQuoteTweets(String),
+    LookupTweetQuoteTweets(Id),
     /// Used to look up who have retweeted the tweet with the passed ID
     /// The ID is given as the String arg going with this variant
-    LookupTweetRetweetedBy(String),
+    LookupTweetRetweetedBy(Id),
     /// Used to look up how many tweets in the last X days match the accompanying query parameters
     LookupTweetsCountRecent,
     /// Used to look up how many tweets match the accompanying query parameters in the entire
@@ -120,8 +120,8 @@ pub enum Endpoint {
     /// Used to look up all tweets that match the accompanying query parameters in the entire
     /// history of twitter. Can only be used with Academic access.
     SearchTweetsAll,
-    TimelineUserTweets(String),
-    TimelineUserMentions(String),
+    TimelineUserTweets(String), // TODO can't find these endpoints right now??
+    TimelineUserMentions(String), // TODO can't find these endpoints right now??
     StreamTweets,
     StreamRules,
     UsersByUsernames, // TODO expand to include more endpoints
@@ -268,6 +268,37 @@ impl std::fmt::Display for Endpoint {
     }
 }
 
+/// Struct representing a Twitter Id.
+///
+/// A Twitter Id is a 64-bit unsigned integer,
+/// and this struct is a simple wrapper around that value
+///
+/// An ID is easiest to construct from a u64 using u64.into
+/// or Id::from. It can also be constructed from a &str value
+/// if a valid u64 string slice is used with try_into or try_from.
+#[derive(Debug, Clone, Copy)]
+pub struct Id {
+    id: u64
+}
+impl Display for Id {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.id)
+    }
+}
+impl From<u64> for Id {
+    fn from(id: u64) -> Self {
+        Id { id }
+    }
+}
+impl TryFrom<&str> for Id {
+    type Error = <u64 as std::str::FromStr>::Err;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let id = value.parse::<u64>()?;
+        Ok(Id { id })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -314,11 +345,11 @@ mod tests {
 
     #[test]
     fn lookup_tweet_test() {
-        let endpoint = Endpoint::LookupTweet(String::from("test"));
+        let endpoint = Endpoint::LookupTweet(1.into());
         let expected_methods = vec![Method::GET, Method::DELETE];
         assert_eq!(
             endpoint.to_string(),
-            String::from("https://api.twitter.com/2/tweets/test")
+            String::from("https://api.twitter.com/2/tweets/1")
         );
 
         check_methods(&endpoint, &expected_methods);
@@ -326,7 +357,7 @@ mod tests {
 
     #[test]
     fn lookup_quote_tweets_test() {
-        let endpoint = Endpoint::LookupTweetQuoteTweets(String::from("test"));
+        let endpoint = Endpoint::LookupTweetQuoteTweets(1.into());
         let expected_paths = vec![Method::GET];
         check_methods(&endpoint, &expected_paths);
 
@@ -334,13 +365,11 @@ mod tests {
             endpoint.get_auth_type(&Method::GET).unwrap(),
             AuthenticationType::BearerToken
         );
-
-        endpoint.to_string();
     }
     // TODO fix tests below
     #[test]
     fn lookup_retweeted_by_test() {
-        let endpoint = Endpoint::LookupTweetRetweetedBy(String::from("test"));
+        let endpoint = Endpoint::LookupTweetRetweetedBy(1.into());
     }
 
     #[test]

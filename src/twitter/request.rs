@@ -121,6 +121,7 @@ impl TwitterRequestBuilder {
         self
     }
 
+    /// Builds a TwitterRequest that can then be used to send the request
     pub fn build(self) -> Result<TwitterRequest, TwitterBuilderError> {
         if self.endpoint.is_none() {
             Err(TwitterBuilderError::NoEndpointError)

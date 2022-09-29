@@ -28,29 +28,33 @@
 use std::fmt::Display;
 use std::fmt::Write as _;
 
+/// This struct represents a list of tweet ids to use in
+/// a tweets GET request. Must not be empty to be used in a
+/// request.
 pub struct IDFilter {
-    id_list: Vec<u64>,
+    id_list: Vec<Id>,
 }
 
 impl IDFilter {
-    /// Creates a new empty IDFilter
-    pub fn new() -> IDFilter {
-        IDFilter {
-            id_list: Vec::with_capacity(16),
-        }
-    }
     /// Creates a new IDFilter from an Iterable
-    pub fn from_id_list(ids: impl IntoIterator<Item = u64>) -> IDFilter {
+    pub fn from_iterator(ids: impl IntoIterator<Item = impl Into<Id>>) -> IDFilter {
         IDFilter {
-            id_list: Vec::from_iter(ids),
+            id_list: Vec::from_iter(ids.into_iter().map(|f| f.into())),
         }
     }
     /// Adds an ID to the IDFilter
-    pub fn add_id(&mut self, id: u64) {
-        self.id_list.push(id)
+    pub fn add_id(&mut self, id: impl Into<Id>) {
+        let id = id.into();
+        if !self.id_list.contains(&id) {
+            self.id_list.push(id)
+        }
     }
     /// Adds all the IDS in the passed iterable into the IDFilter
-    pub fn add_ids(&mut self, ids: impl IntoIterator<Item = u64>) {
+    pub fn add_ids(&mut self, ids: impl IntoIterator<Item = impl Into<Id>>) {
+        let ids: Vec<Id> = ids.into_iter()
+            .map(|f| f.into())
+            .filter(|f| !self.id_list.contains(&f))
+            .collect();
         self.id_list.extend(ids)
     }
     pub fn is_empty(&self) -> bool {
@@ -59,7 +63,12 @@ impl IDFilter {
 }
 
 impl Display for IDFilter {
+    /// Formats the IDFilter for use in a request. Will fail and return an
+    /// error if the IDFilter is empty.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.is_empty() { // An empty IDFilter is invalid
+            return std::fmt::Result::Err(std::fmt::Error)
+        };
         let mut s = String::from("ids=");
         self.id_list
             .iter()
@@ -68,14 +77,50 @@ impl Display for IDFilter {
     }
 }
 
+#[derive(PartialEq, Eq, Clone, Copy)]
+struct Id {
+    id: u64
+}
+impl Display for Id {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.id)
+    }
+}
+impl From<u64> for Id {
+    fn from(id: u64) -> Self {
+        Self { id }
+    }
+}
+impl TryFrom<&str> for Id {
+    type Error = <u64 as std::str::FromStr>::Err;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let id = value.parse::<u64>()?;
+        Ok(Id { id })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::IDFilter;
 
     #[test]
-    fn test_empty() {
-        let sut = IDFilter::new();
-        assert!(sut.is_empty());
-        assert_eq!(String::from("ids"), format!("{}", sut))
+    fn test_from_it() {
+        let ids: Vec<u64> = vec![123, 32323, 235235];
+        let ids2 = ids.clone();
+        let ids3: Vec<u64> = vec![1, 2, 3];
+        let mut sut = IDFilter::from_iterator(ids);
+        assert!(!sut.is_empty());
+        assert_eq!(
+            String::from("ids=123,32323,235235"),
+            format!("{}", &sut));
+        sut.add_ids(ids2);
+        assert_eq!(
+            String::from("ids=123,32323,235235"),
+            format!("{}", &sut));
+        sut.add_ids(ids3);
+        assert_eq!(
+            String::from("ids=123,32323,235235,1,2,3"),
+            format!("{}", &sut));
     }
 }
