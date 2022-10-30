@@ -1,6 +1,25 @@
+/*
+  The GPLv3 License (GPLv3)
+
+  Copyright (c) 2022 Jacob Skoog
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 mod twitter_auth;
 
-use std::fmt::{Formatter, Display};
+use std::fmt::{Display, Formatter};
 
 use http::Method;
 use reqwest::{Client, Response};
@@ -195,7 +214,7 @@ impl Endpoint {
         &self,
         client: &Client,
         method: Method,
-        groups: GroupList,
+        query_filters: super::query_filters::QueryFilters,
         auth: AuthenticationData,
     ) -> Result<Response, TwitterError> {
         if auth.get_type() != self.get_auth_type(&method).unwrap() {
@@ -215,15 +234,30 @@ impl Endpoint {
         let req = match self {
             Endpoint::LookupTweets => {
                 // This endpoint looks up tweets using provided IDS
-                req.query(&[("ids", &groups.to_string().replace(" ", ","))])
+                let ids = query_filters.ids();
+                if ids.is_none() {
+                    return Err(TwitterError::BadQueryError(String::from(
+                        "No ids provided, cannot use lookup tweets endpoint",
+                    )));
+                }
+                let ids = ids.unwrap();
+                req.query(&[("ids", &ids.to_string())])
+            }
+            Endpoint::SearchTweetsRecent | Endpoint::SearchTweetsAll => {
+                let groups = query_filters.groups();
+                if groups.is_none() {
+                    return Err(TwitterError::BadQueryError(String::from(
+                        "No filters provided, cannot use search tweets endpoint",
+                    )));
+                }
+                let groups = groups.unwrap();
+                req.query(&[("query", &groups.to_string())])
             }
             _ => req, // Endpoint::LookupTweet(_) => {}
                       // Endpoint::LookupTweetQuoteTweets(_) => {}
                       // Endpoint::LookupTweetRetweetedBy(_) => {}
                       // Endpoint::LookupTweetsCountRecent => {}
                       // Endpoint::LookupTweetsCountAll => {}
-                      // Endpoint::SearchTweetsRecent => {}
-                      // Endpoint::SearchTweetsAll => {}
                       // Endpoint::TimelineUserTweets(_) => {}
                       // Endpoint::TimelineUserMentions(_) => {}
                       // Endpoint::StreamTweets => {}
@@ -231,7 +265,7 @@ impl Endpoint {
                       // Endpoint::UsersByUsernames => {}
         };
         // TODO add handling for different Endpoint variants, currently only does those that store filter groups in "query"
-        let req = req.query(&[("query", &groups.to_string())]).send().await;
+        let req = req.send().await;
         match req {
             Ok(r) => Ok(r),
             Err(e) => Err(TwitterError::RequestError(e)),
@@ -278,7 +312,7 @@ impl std::fmt::Display for Endpoint {
 /// if a valid u64 string slice is used with try_into or try_from.
 #[derive(Debug, Clone, Copy)]
 pub struct Id {
-    id: u64
+    id: u64,
 }
 impl Display for Id {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

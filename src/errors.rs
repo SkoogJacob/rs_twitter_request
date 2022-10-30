@@ -1,3 +1,22 @@
+/*
+* The GPLv3 License (GPLv3)
+
+Copyright (c) 2022 Jacob Skoog
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 use std::fmt::Display;
 
 use http::Method;
@@ -15,6 +34,7 @@ pub enum TwitterError {
     NoAuthError,
     WrongAuthError(Endpoint, AuthenticationType, Method),
     BadAuthError(AuthenticationType),
+    BadQueryError(String),
 }
 
 impl Display for TwitterError {
@@ -57,6 +77,9 @@ impl Display for TwitterError {
                     endpoint.get_auth_type(method).unwrap()
                 )
             }
+            TwitterError::BadQueryError(info) => {
+                write!(f, "{}", info)
+            }
         }
     }
 }
@@ -69,4 +92,6 @@ pub enum TwitterBuilderError {
     NoEndpointError,
     #[error("no method provided, cannot build a TwitterRequest")]
     NoMethodError,
+    #[error("Bad query, {0}")]
+    BadQueryError(String),
 }
