@@ -71,4 +71,25 @@ async fn main() {
             println!("error: {}", e)
         }
     }
+    let request = TwitterRequest::builder()
+        .set_endpoint(Endpoint::LookupTweets)
+        .add_id(1585200978755665925)
+        .add_bearer_token(&env::var("BEARER_TOKEN").unwrap())
+        .set_method(Method::GET)
+        .build();
+    let request = match request {
+        Ok(r) => r,
+        Err(e) => {
+            eprintln!("{:?}", e);
+            panic!("Error building request")
+        }
+    };
+    let req = request.send_request(&client).await;
+    match req {
+        Ok(r) => {
+            println!("ok: {:?}", &r);
+            println!("response text: {:?}", r.text().await.unwrap())
+        }
+        Err(e) => eprintln!("error: {}", e),
+    }
 }

@@ -120,6 +120,11 @@ impl TwitterRequestBuilder {
         self
     }
 
+    pub fn add_id(mut self, id: u64) -> Self {
+        self.query_filters = self.query_filters.add_id(id);
+        self
+    }
+
     /// Adds a new filter group that can evaluate to true alternatively to previous groups.
     /// The group will be initiated with the passed filter
     pub fn add_or_group(mut self, init_filter: Filter) -> Self {
