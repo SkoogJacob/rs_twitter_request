@@ -265,6 +265,9 @@ impl Endpoint {
                       // Endpoint::UsersByUsernames => {}
         };
         // TODO add handling for different Endpoint variants, currently only does those that store filter groups in "query"
+        println!("######");
+        println!("{:?}", &req);
+        println!("######");
         let req = req.send().await;
         match req {
             Ok(r) => Ok(r),

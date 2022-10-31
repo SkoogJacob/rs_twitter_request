@@ -94,7 +94,7 @@ impl Display for IDFilter {
             // An empty IDFilter is invalid
             return std::fmt::Result::Err(std::fmt::Error);
         };
-        let mut s = String::from("ids=");
+        let mut s = String::with_capacity(1024);
         self.id_list
             .iter()
             .for_each(|id| write!(s, "{},", id).expect("Could not write ID into string buffer"));
