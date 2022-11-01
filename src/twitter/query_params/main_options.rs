@@ -21,49 +21,38 @@ use std::fmt::{Display, Formatter};
 
 use chrono::{DateTime, Utc};
 
-use crate::twitter::query_filters::group::GroupList;
+use crate::twitter::query_filters::{group::GroupList, ids::Id};
 
 #[derive(PartialEq, Eq, Debug)]
 pub enum MainOptions {
     Query(GroupList),
     StartTime(DateTime<Utc>),
     EndTime(DateTime<Utc>),
-    SinceId(u64),
-    UntilId(u64),
+    SinceId(Id),
+    UntilId(Id),
     MaxResults(Max),
     SortOrder(Order),
     NextToken,       // WIP
     PaginationToken, // WIP
 }
 
-impl Display for MainOptions {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let opt = match self {
-            MainOptions::Query(groups) => {
-                format!("query={}", groups)
+impl MainOptions {
+    pub fn get_query_tuple<'s>(&'s self) -> (String, String) {
+        match self {
+            MainOptions::Query(groups) => (String::from("query"), groups.to_string()),
+            MainOptions::StartTime(start) => (String::from("start_time"), start.to_string()),
+            MainOptions::EndTime(end) => (String::from("end_time"), end.to_string()),
+            MainOptions::SinceId(since_id) => (String::from("since_id"), since_id.to_string()),
+            MainOptions::UntilId(until_id) => (String::from("until_id"), until_id.to_string()),
+            MainOptions::MaxResults(max_results) => {
+                (String::from("max_results"), max_results.to_string())
             }
-            MainOptions::StartTime(d) => {
-                format!("start_time={}", d)
+            MainOptions::SortOrder(sort_order) => {
+                (String::from("sort_order"), sort_order.to_string())
             }
-            MainOptions::EndTime(d) => {
-                format!("end_time={}", d)
-            }
-            MainOptions::SinceId(id) => {
-                format!("since_id={}", id)
-            }
-            MainOptions::UntilId(id) => {
-                format!("until_id={}", id)
-            }
-            MainOptions::MaxResults(max) => {
-                format!("max_results={}", max)
-            }
-            MainOptions::SortOrder(order) => {
-                format!("sort_order={}", order)
-            }
-            MainOptions::NextToken => "next_token".to_string(),
-            MainOptions::PaginationToken => "pagination_token".to_string(),
-        };
-        write!(f, "{}", opt)
+            MainOptions::NextToken => (String::from("next_token"), todo!()),
+            MainOptions::PaginationToken => (String::from("pagination_token"), todo!()),
+        }
     }
 }
 
@@ -95,6 +84,11 @@ impl Max {
             (10..=100).contains(&max),
             "Max must be between 10 and 100 (inclusive both ends)"
         );
+        Max { max }
+    }
+}
+impl From<u8> for Max {
+    fn from(max: u8) -> Self {
         Max { max }
     }
 }

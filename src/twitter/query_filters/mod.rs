@@ -26,7 +26,7 @@ use self::{group::GroupList, ids::IDFilter};
 
 pub mod filter;
 pub mod group;
-mod ids;
+pub mod ids;
 
 /// A wrapper struct to contain the filter types used to make requests to the twitter API
 /// Guaranteed to contain at least some data

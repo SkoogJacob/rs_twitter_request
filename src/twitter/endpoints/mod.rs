@@ -26,7 +26,7 @@ use reqwest::{Client, Response};
 
 pub use twitter_auth::{AuthenticationData, AuthenticationType};
 
-use crate::twitter::query_filters::group::GroupList;
+use crate::twitter::query_filters::{group::GroupList, ids::Id};
 use crate::{errors::TwitterError, Filter};
 
 pub const TWITTER_URL: &str = "https://api.twitter.com";
@@ -302,37 +302,6 @@ impl std::fmt::Display for Endpoint {
             Endpoint::UsersByUsernames => format!("{}/2/users/by", TWITTER_URL),
         };
         write!(f, "{}", url)
-    }
-}
-
-/// Struct representing a Twitter Id.
-///
-/// A Twitter Id is a 64-bit unsigned integer,
-/// and this struct is a simple wrapper around that value
-///
-/// An ID is easiest to construct from a u64 using u64.into
-/// or Id::from. It can also be constructed from a &str value
-/// if a valid u64 string slice is used with try_into or try_from.
-#[derive(Debug, Clone, Copy)]
-pub struct Id {
-    id: u64,
-}
-impl Display for Id {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.id)
-    }
-}
-impl From<u64> for Id {
-    fn from(id: u64) -> Self {
-        Id { id }
-    }
-}
-impl TryFrom<&str> for Id {
-    type Error = <u64 as std::str::FromStr>::Err;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let id = value.parse::<u64>()?;
-        Ok(Id { id })
     }
 }
 
